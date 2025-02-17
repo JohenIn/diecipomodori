@@ -91,7 +91,7 @@ fun GameScreen(modifier: Modifier = Modifier) {
             }
         }
         var score by remember(restartTrigger) { mutableStateOf(0) }
-        var timeLeft by remember(restartTrigger) { mutableStateOf(120) }
+        var timeLeft by remember(restartTrigger) { mutableStateOf(10) } //test 후 120으로 변경
         // 셀 스냅 선택 (선택된 셀 인덱스)
         var dragStartCell by remember(restartTrigger) { mutableStateOf<Pair<Int, Int>?>(null) }
         var dragCurrentCell by remember(restartTrigger) { mutableStateOf<Pair<Int, Int>?>(null) }
@@ -322,7 +322,7 @@ fun GameScreen(modifier: Modifier = Modifier) {
             if (!isPlaying) {
                 // 게임 종료 시, 백그라운드에서 점수를 데이터베이스에 저장
                 withContext(Dispatchers.IO) {
-                    db.userDao().insertAll(User(score = score))
+                    db.userDao().insertIfHigher(User(score = score))
                 }
             }
         }
