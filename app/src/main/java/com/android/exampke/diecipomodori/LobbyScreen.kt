@@ -35,9 +35,11 @@ fun LobbyScreen(navController: NavController) {
         val db = remember { MyDb.getDatabase(context) }
         val list by db.userDao().getAll().collectAsStateWithLifecycle(emptyList())
         val maxScore = list.maxOfOrNull { it.score ?: 0 } ?: 0
+
         Text(
-            text = maxScore.toString(),
+            text =  if (maxScore == 0) "게임 좀 하세요" else "최고 점수: $maxScore",
             modifier = Modifier.align(Alignment.BottomCenter),
         )
+
     }
 }
