@@ -40,12 +40,17 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.boundsInParent
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
+import com.android.exampke.diecipomodori.model.MyDb
+import com.android.exampke.diecipomodori.model.User
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.random.Random
@@ -55,6 +60,7 @@ import kotlin.random.Random
 fun GameScreen(modifier: Modifier = Modifier) {
     // 인트로 화면
     var gameStarted by remember { mutableStateOf(false) }
+    var isPlaying by remember { mutableStateOf(true) }
     if (!gameStarted) {
         Box(
             modifier = modifier.fillMaxSize(),
@@ -62,7 +68,10 @@ fun GameScreen(modifier: Modifier = Modifier) {
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Spacer(modifier = Modifier.height(16.dp))
-                Button(onClick = { gameStarted = true }) {
+                Button(onClick = {
+                    gameStarted = true
+                    isPlaying = true
+                }) {
                     Text(text = "Start")
                 }
             }
@@ -126,8 +135,12 @@ fun GameScreen(modifier: Modifier = Modifier) {
                                 onDragStart = { offset ->
                                     if (timeLeft <= 0) return@detectDragGestures
                                     // 셀 스냅: 터치 좌표를 cellSize.toPx()로 나누어 인덱스 계산
-                                    val col = (offset.x / cellSize.toPx()).toInt().coerceIn(0, numCols - 1)
-                                    val row = (offset.y / cellSize.toPx()).toInt().coerceIn(0, numRows - 1)
+                                    val col = (offset.x / cellSize.toPx())
+                                        .toInt()
+                                        .coerceIn(0, numCols - 1)
+                                    val row = (offset.y / cellSize.toPx())
+                                        .toInt()
+                                        .coerceIn(0, numRows - 1)
                                     dragStartCell = Pair(row, col)
                                     dragCurrentCell = dragStartCell
                                     // 자유 드래그 raw offset 저장 (로컬 좌표 그대로)
@@ -136,8 +149,12 @@ fun GameScreen(modifier: Modifier = Modifier) {
                                 },
                                 onDrag = { change, _ ->
                                     if (timeLeft <= 0) return@detectDragGestures
-                                    val col = (change.position.x / cellSize.toPx()).toInt().coerceIn(0, numCols - 1)
-                                    val row = (change.position.y / cellSize.toPx()).toInt().coerceIn(0, numRows - 1)
+                                    val col = (change.position.x / cellSize.toPx())
+                                        .toInt()
+                                        .coerceIn(0, numCols - 1)
+                                    val row = (change.position.y / cellSize.toPx())
+                                        .toInt()
+                                        .coerceIn(0, numRows - 1)
                                     dragCurrentCell = Pair(row, col)
                                     freeDragCurrentOffset = change.position
                                 },
@@ -181,13 +198,26 @@ fun GameScreen(modifier: Modifier = Modifier) {
                             Row {
                                 for (colIndex in 0 until numCols) {
                                     if (board[rowIndex][colIndex] != null) {
-                                        val isSelected = if (dragStartCell != null && dragCurrentCell != null) {
-                                            val minRow = min(dragStartCell!!.first, dragCurrentCell!!.first)
-                                            val maxRow = max(dragStartCell!!.first, dragCurrentCell!!.first)
-                                            val minCol = min(dragStartCell!!.second, dragCurrentCell!!.second)
-                                            val maxCol = max(dragStartCell!!.second, dragCurrentCell!!.second)
-                                            rowIndex in minRow..maxRow && colIndex in minCol..maxCol
-                                        } else false
+                                        val isSelected =
+                                            if (dragStartCell != null && dragCurrentCell != null) {
+                                                val minRow = min(
+                                                    dragStartCell!!.first,
+                                                    dragCurrentCell!!.first
+                                                )
+                                                val maxRow = max(
+                                                    dragStartCell!!.first,
+                                                    dragCurrentCell!!.first
+                                                )
+                                                val minCol = min(
+                                                    dragStartCell!!.second,
+                                                    dragCurrentCell!!.second
+                                                )
+                                                val maxCol = max(
+                                                    dragStartCell!!.second,
+                                                    dragCurrentCell!!.second
+                                                )
+                                                rowIndex in minRow..maxRow && colIndex in minCol..maxCol
+                                            } else false
                                         val imageAlpha = if (isSelected) 1f else 0.5f
 
                                         Box(
@@ -196,7 +226,8 @@ fun GameScreen(modifier: Modifier = Modifier) {
                                                 .padding(1.dp)
                                                 // border 제거함
                                                 .onGloballyPositioned { coords ->
-                                                    cellBounds[rowIndex to colIndex] = coords.boundsInParent()
+                                                    cellBounds[rowIndex to colIndex] =
+                                                        coords.boundsInParent()
                                                 },
                                             contentAlignment = Alignment.Center
                                         ) {
@@ -275,6 +306,27 @@ fun GameScreen(modifier: Modifier = Modifier) {
                 )
             }
         }
+        // 예시: isPlaying 상태 추가
+
+// timeLeft가 0이 되면 isPlaying을 false로 설정
+        LaunchedEffect(timeLeft) {
+            if (timeLeft <= 0) {
+                isPlaying = false
+            }
+        }
+        val context = LocalContext.current
+        val db = remember {
+            MyDb.getDatabase(context)
+        }
+        LaunchedEffect(isPlaying) {
+            if (!isPlaying) {
+                // 게임 종료 시, 백그라운드에서 점수를 데이터베이스에 저장
+                withContext(Dispatchers.IO) {
+                    db.userDao().insertAll(User(score = score))
+                }
+            }
+        }
+
         // 게임 종료 오버레이
         if (timeLeft <= 0) {
             Box(
