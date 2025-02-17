@@ -38,7 +38,7 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.padding(innerPadding)
                     ) {
                         composable("lobby") { LobbyScreen(navController = navController) }
-                        composable("game") { GameScreen(modifier = Modifier.fillMaxSize()) }
+                        composable("game") { GameScreen(modifier = Modifier.fillMaxSize(), navController = navController) }
                     }
                 }
             }

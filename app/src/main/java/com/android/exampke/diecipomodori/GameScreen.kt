@@ -46,6 +46,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.android.exampke.diecipomodori.model.MyDb
 import com.android.exampke.diecipomodori.model.User
 import kotlinx.coroutines.Dispatchers
@@ -57,7 +58,7 @@ import kotlin.random.Random
 
 
 @Composable
-fun GameScreen(modifier: Modifier = Modifier) {
+fun GameScreen(modifier: Modifier = Modifier, navController: NavController) {
     // 인트로 화면
     var gameStarted by remember { mutableStateOf(false) }
     var isPlaying by remember { mutableStateOf(true) }
@@ -350,6 +351,9 @@ fun GameScreen(modifier: Modifier = Modifier) {
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(onClick = { restartTrigger++ }) {
                         Text(text = "Restart")
+                    }
+                    Button(onClick = { navController.navigate("lobby") }) {
+                        Text(text = "Return Home")
                     }
                 }
             }
