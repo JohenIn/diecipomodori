@@ -88,4 +88,7 @@ dependencies {
     // optional - Kotlin Extensions and Coroutines support for Room
     implementation("androidx.room:room-ktx:$room_version")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
+
+    //adMob
+    implementation("com.google.android.gms:play-services-ads:23.6.0")
 }

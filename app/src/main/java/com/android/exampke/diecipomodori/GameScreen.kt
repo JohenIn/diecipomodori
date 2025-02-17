@@ -1,5 +1,8 @@
 package com.android.exampke.diecipomodori
 
+import android.app.Activity
+import android.util.Log
+import androidx.activity.ComponentActivity
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -49,6 +52,12 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.android.exampke.diecipomodori.model.MyDb
 import com.android.exampke.diecipomodori.model.User
+import com.google.android.gms.ads.AdError
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.FullScreenContentCallback
+import com.google.android.gms.ads.LoadAdError
+import com.google.android.gms.ads.interstitial.InterstitialAd
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -62,6 +71,9 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController) {
     // 인트로 화면
     var gameStarted by remember { mutableStateOf(false) }
     var isPlaying by remember { mutableStateOf(true) }
+    // playCount를 게임 종료 시마다 증가시키도록 관리한다고 가정합니다.
+    var playCount by remember { mutableStateOf(0) }
+
     if (!gameStarted) {
         Box(
             modifier = modifier.fillMaxSize(),
@@ -325,6 +337,7 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController) {
                 withContext(Dispatchers.IO) {
                     db.userDao().insertIfHigher(User(score = score))
                 }
+                playCount++
             }
         }
 
@@ -358,8 +371,61 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController) {
                 }
             }
         }
+        var interstitialAd by remember { mutableStateOf<InterstitialAd?>(null) }
+
+// playCount가 3 이상이 되면 광고를 로드하고 보여주는 LaunchedEffect
+        LaunchedEffect(playCount) {
+            if (playCount >= 1) {
+                val adRequest = AdRequest.Builder().build()
+                InterstitialAd.load(
+                    context,
+                    "ca-app-pub-3940256099942544/1033173712", // 테스트 광고 단위 ID, 실제 배포시 자신의 ID 사용
+                    adRequest,
+                    object : InterstitialAdLoadCallback() {
+                        override fun onAdFailedToLoad(adError: LoadAdError) {
+                            Log.d("GameScreen", adError.toString())
+                            interstitialAd = null
+                        }
+
+                        override fun onAdLoaded(loadedAd: InterstitialAd) {
+                            Log.d("GameScreen", "Ad was loaded.")
+                            interstitialAd = loadedAd
+                            interstitialAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
+                                override fun onAdClicked() {
+                                    Log.d("GameScreen", "Ad was clicked.")
+                                }
+
+                                override fun onAdDismissedFullScreenContent() {
+                                    Log.d("GameScreen", "Ad dismissed fullscreen content.")
+                                    interstitialAd = null
+                                }
+
+                                override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+                                    Log.e("GameScreen", "Ad failed to show fullscreen content.")
+                                    interstitialAd = null
+                                }
+
+                                override fun onAdImpression() {
+                                    Log.d("GameScreen", "Ad recorded an impression.")
+                                }
+
+                                override fun onAdShowedFullScreenContent() {
+                                    Log.d("GameScreen", "Ad showed fullscreen content.")
+                                }
+                            }
+                            // 광고가 로드되면 메인 액티비티에서 즉시 표시
+                            (context as? Activity)?.let { activity ->
+                                interstitialAd?.show(activity)
+                            }
+                        }
+                    }
+                )
+                playCount = 0
+            }
+        }
     }
 }
+
 
 @Composable
 fun VerticalProgressBar(
