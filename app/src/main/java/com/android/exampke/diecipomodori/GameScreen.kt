@@ -61,11 +61,6 @@ fun GameScreen(modifier: Modifier = Modifier) {
             contentAlignment = Alignment.Center
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = "TOMATOMATOMATO",
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold
-                )
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(onClick = { gameStarted = true }) {
                     Text(text = "Start")

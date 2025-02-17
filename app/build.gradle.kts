@@ -4,6 +4,9 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     //Navigation
     kotlin("plugin.serialization") version "2.0.21"
+
+    //Room
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -78,4 +81,11 @@ dependencies {
     // JSON serialization library, works with the Kotlin serialization plugin
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
 
+    //Room
+    val room_version = "2.6.1"
+    implementation("androidx.room:room-runtime:$room_version")
+    ksp("androidx.room:room-compiler:$room_version")
+    // optional - Kotlin Extensions and Coroutines support for Room
+    implementation("androidx.room:room-ktx:$room_version")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
 }
