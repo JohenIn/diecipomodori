@@ -49,6 +49,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import com.android.exampke.diecipomodori.model.MyDb
 import com.android.exampke.diecipomodori.model.User
@@ -90,6 +91,7 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController) {
             }
         }
     } else {
+        Image(painterResource(R.drawable.playbackground), contentDescription = "null", modifier = Modifier.fillMaxSize().zIndex(-1f))
         // 게임 진행 상태 (restartTrigger가 변경되면 상태 재초기화됨)
         var restartTrigger by remember { mutableStateOf(0) }
         val numRows = 10
@@ -104,7 +106,7 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController) {
             }
         }
         var score by remember(restartTrigger) { mutableStateOf(0) }
-        var timeLeft by remember(restartTrigger) { mutableStateOf(10) } //test 후 120으로 변경
+        var timeLeft by remember(restartTrigger) { mutableStateOf(120) } //test 후 120으로 변경
         // 셀 스냅 선택 (선택된 셀 인덱스)
         var dragStartCell by remember(restartTrigger) { mutableStateOf<Pair<Int, Int>?>(null) }
         var dragCurrentCell by remember(restartTrigger) { mutableStateOf<Pair<Int, Int>?>(null) }
@@ -375,7 +377,7 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController) {
 
 // playCount가 3 이상이 되면 광고를 로드하고 보여주는 LaunchedEffect
         LaunchedEffect(playCount) {
-            if (playCount >= 1) {
+            if (playCount >= 120) {
                 val adRequest = AdRequest.Builder().build()
                 InterstitialAd.load(
                     context,
