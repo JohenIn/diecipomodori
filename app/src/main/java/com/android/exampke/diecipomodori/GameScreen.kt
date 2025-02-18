@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -324,21 +325,39 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController) {
                 modifier = Modifier
                     .fillMaxHeight()
                     .width(120.dp)
-                    .padding(top = 20.dp)
                     .weight(1f),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = "점수: $score",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontSize = 20.sp
-                )
-                Text(
-                    text = "시간: ${timeLeft}s",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontSize = 20.sp
-                )
+                Box(// 원하는 크기로 조절하세요.
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.scoreboard),
+                        contentDescription = "Clock background",
+                        modifier = Modifier.size(120.dp)
+                    )
+                    Text(
+                        text = score.toString(),
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        modifier = Modifier.align(Alignment.Center).offset(x=(-20).dp)
+                    )
+                }
+
+                Box(// 원하는 크기로 조절하세요.
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.clock),
+                        contentDescription = "Clock background",
+                        modifier = Modifier.size(80.dp)
+                    )
+                    Text(
+                        text = "${timeLeft}s",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontSize = 18.sp,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
                 Spacer(modifier = Modifier.height(20.dp))
                 val animatedProgress by animateFloatAsState(
                     targetValue = (120 - timeLeft) / 120f,
@@ -360,7 +379,6 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController) {
                 isPlaying = false
             }
         }
-        val context = LocalContext.current
         val db = remember {
             MyDb.getDatabase(context)
         }
@@ -384,18 +402,24 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController) {
             ) {
                 Image(painterResource(R.drawable.button_backhomeaftergame),
                     contentDescription = "null",
-                    modifier = Modifier.clickable {navController.navigate("lobby")
-                    vibrate()}
+                    modifier = Modifier
+                        .clickable {
+                            navController.navigate("lobby")
+                            vibrate()
+                        }
                         .align(Alignment.TopStart))
                 Image(painterResource(R.drawable.button_replay), contentDescription = "null",
-                    modifier = Modifier.clickable {restartTrigger++
-                    vibrate()}
+                    modifier = Modifier
+                        .clickable {
+                            restartTrigger++
+                            vibrate()
+                        }
                         .align(Alignment.TopEnd))
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = "Game Finished",
                         style = MaterialTheme.typography.headlineMedium,
-                        color = Color.White
+                        color = Color.White,
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
