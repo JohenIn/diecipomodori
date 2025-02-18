@@ -80,6 +80,13 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController) {
     var isPlaying by remember { mutableStateOf(true) }
     // playCount를 게임 종료 시마다 증가시키도록 관리한다고 가정합니다.
     var playCount by remember { mutableStateOf(0) }
+    val context = LocalContext.current
+    val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+    val vibrate: () -> Unit = {
+        val vibrationEffect =
+            VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE)
+        vibrator.vibrate(vibrationEffect)
+    }
 
     if (!gameStarted) {
         Box(
@@ -94,18 +101,13 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController) {
                     .zIndex(-1f)
                     .alpha(0.5f)
             )
-            val context = LocalContext.current
-            val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-            val vibrate: () -> Unit = {
-                val vibrationEffect =
-                    VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE)
-                vibrator.vibrate(vibrationEffect)
-            }
+
             Image(
                 painterResource(R.drawable.startbutton),
                 contentDescription = "null",
-                modifier = Modifier.align(Alignment.TopCenter)
-                    .clickable{
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .clickable {
                         vibrate()
                         gameStarted = true
                         isPlaying = true
@@ -134,7 +136,7 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController) {
             }
         }
         var score by remember(restartTrigger) { mutableStateOf(0) }
-        var timeLeft by remember(restartTrigger) { mutableStateOf(5) } //test 후 120으로 변경
+        var timeLeft by remember(restartTrigger) { mutableStateOf(120) } //test 후 120으로 변경
         // 셀 스냅 선택 (선택된 셀 인덱스)
         var dragStartCell by remember(restartTrigger) { mutableStateOf<Pair<Int, Int>?>(null) }
         var dragCurrentCell by remember(restartTrigger) { mutableStateOf<Pair<Int, Int>?>(null) }
@@ -221,6 +223,7 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController) {
                                                     if (board[row][col] != null) {
                                                         board[row][col] = null
                                                         score++
+                                                        vibrate()
                                                     }
                                                 }
                                             }
@@ -379,6 +382,15 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController) {
                     .background(Color(0xAA000000)),
                 contentAlignment = Alignment.Center
             ) {
+                Image(painterResource(R.drawable.button_backhomeaftergame),
+                    contentDescription = "null",
+                    modifier = Modifier.clickable {navController.navigate("lobby")
+                    vibrate()}
+                        .align(Alignment.TopStart))
+                Image(painterResource(R.drawable.button_replay), contentDescription = "null",
+                    modifier = Modifier.clickable {restartTrigger++
+                    vibrate()}
+                        .align(Alignment.TopEnd))
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = "Game Finished",
@@ -389,15 +401,9 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController) {
                     Text(
                         text = "Score: $score",
                         style = MaterialTheme.typography.headlineSmall,
-                        color = Color.White
+                        color = Color.White,
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    Button(onClick = { restartTrigger++ }) {
-                        Text(text = "Restart")
-                    }
-                    Button(onClick = { navController.navigate("lobby") }) {
-                        Text(text = "Return Home")
-                    }
                 }
             }
         }
