@@ -1,6 +1,9 @@
 package com.android.exampke.diecipomodori
 
 import android.app.Activity
+import android.content.Context
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.compose.animation.core.LinearEasing
@@ -9,6 +12,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -35,11 +39,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.boundsInParent
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -80,18 +86,40 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController) {
             modifier = modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Button(onClick = {
-                    gameStarted = true
-                    isPlaying = true
-                }) {
-                    Text(text = "Start")
-                }
+            Image(
+                painterResource(R.drawable.playbackground),
+                contentDescription = "null",
+                modifier = Modifier
+                    .fillMaxSize()
+                    .zIndex(-1f)
+                    .alpha(0.5f)
+            )
+            val context = LocalContext.current
+            val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+            val vibrate: () -> Unit = {
+                val vibrationEffect =
+                    VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE)
+                vibrator.vibrate(vibrationEffect)
             }
+            Image(
+                painterResource(R.drawable.startbutton),
+                contentDescription = "null",
+                modifier = Modifier.align(Alignment.TopCenter)
+                    .clickable{
+                        vibrate()
+                        gameStarted = true
+                        isPlaying = true
+                    }
+            )
         }
     } else {
-        Image(painterResource(R.drawable.playbackground), contentDescription = "null", modifier = Modifier.fillMaxSize().zIndex(-1f))
+        Image(
+            painterResource(R.drawable.playbackground),
+            contentDescription = "null",
+            modifier = Modifier
+                .fillMaxSize()
+                .zIndex(-1f)
+        )
         // 게임 진행 상태 (restartTrigger가 변경되면 상태 재초기화됨)
         var restartTrigger by remember { mutableStateOf(0) }
         val numRows = 10
@@ -106,7 +134,7 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController) {
             }
         }
         var score by remember(restartTrigger) { mutableStateOf(0) }
-        var timeLeft by remember(restartTrigger) { mutableStateOf(120) } //test 후 120으로 변경
+        var timeLeft by remember(restartTrigger) { mutableStateOf(5) } //test 후 120으로 변경
         // 셀 스냅 선택 (선택된 셀 인덱스)
         var dragStartCell by remember(restartTrigger) { mutableStateOf<Pair<Int, Int>?>(null) }
         var dragCurrentCell by remember(restartTrigger) { mutableStateOf<Pair<Int, Int>?>(null) }
@@ -392,29 +420,30 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController) {
                         override fun onAdLoaded(loadedAd: InterstitialAd) {
                             Log.d("GameScreen", "Ad was loaded.")
                             interstitialAd = loadedAd
-                            interstitialAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
-                                override fun onAdClicked() {
-                                    Log.d("GameScreen", "Ad was clicked.")
-                                }
+                            interstitialAd?.fullScreenContentCallback =
+                                object : FullScreenContentCallback() {
+                                    override fun onAdClicked() {
+                                        Log.d("GameScreen", "Ad was clicked.")
+                                    }
 
-                                override fun onAdDismissedFullScreenContent() {
-                                    Log.d("GameScreen", "Ad dismissed fullscreen content.")
-                                    interstitialAd = null
-                                }
+                                    override fun onAdDismissedFullScreenContent() {
+                                        Log.d("GameScreen", "Ad dismissed fullscreen content.")
+                                        interstitialAd = null
+                                    }
 
-                                override fun onAdFailedToShowFullScreenContent(adError: AdError) {
-                                    Log.e("GameScreen", "Ad failed to show fullscreen content.")
-                                    interstitialAd = null
-                                }
+                                    override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+                                        Log.e("GameScreen", "Ad failed to show fullscreen content.")
+                                        interstitialAd = null
+                                    }
 
-                                override fun onAdImpression() {
-                                    Log.d("GameScreen", "Ad recorded an impression.")
-                                }
+                                    override fun onAdImpression() {
+                                        Log.d("GameScreen", "Ad recorded an impression.")
+                                    }
 
-                                override fun onAdShowedFullScreenContent() {
-                                    Log.d("GameScreen", "Ad showed fullscreen content.")
+                                    override fun onAdShowedFullScreenContent() {
+                                        Log.d("GameScreen", "Ad showed fullscreen content.")
+                                    }
                                 }
-                            }
                             // 광고가 로드되면 메인 액티비티에서 즉시 표시
                             (context as? Activity)?.let { activity ->
                                 interstitialAd?.show(activity)
@@ -427,7 +456,6 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController) {
         }
     }
 }
-
 
 @Composable
 fun VerticalProgressBar(
