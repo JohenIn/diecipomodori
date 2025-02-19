@@ -1,5 +1,6 @@
 package com.android.exampke.diecipomodori
 
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -36,6 +37,9 @@ class MainActivity : ComponentActivity() {
         backgroundScope.launch {
             MobileAds.initialize(this@MainActivity) {}
         }
+
+        // 기기의 센서를 사용하되, 가로 방향만 유지 (왼쪽/오른쪽 모두 가능)
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
 
         setContent {
             DieciPomodoriTheme {

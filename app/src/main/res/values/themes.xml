@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <style name="Theme.DieciPomodori" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.DieciPomodori.Launcher" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <!-- 윈도우 배경을 흰색으로 설정 -->
+        <item name="android:windowBackground">@android:color/white</item>
+        <!-- 필요에 따라 windowDisablePreview를 true로 설정하면 앱 아이콘 미리보기를 제거할 수 있음 -->
+        <item name="android:windowDisablePreview">true</item>
+    </style>
 </resources>
