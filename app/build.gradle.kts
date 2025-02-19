@@ -91,4 +91,7 @@ dependencies {
 
     //adMob
     implementation("com.google.android.gms:play-services-ads:23.6.0")
+
+  //lottieanimation
+    implementation ("com.airbnb.android:lottie-compose:6.6.2")
 }

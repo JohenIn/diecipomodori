@@ -44,9 +44,10 @@ class MainActivity : ComponentActivity() {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     NavHost(
                         navController = navController,
-                        startDestination = "lobby",
+                        startDestination = "splash",
                         modifier = Modifier.padding(innerPadding)
                     ) {
+                        composable("splash") { SplashScreen(navController = navController) }
                         composable("lobby") { LobbyScreen(navController = navController) }
                         composable("game") { GameScreen(modifier = Modifier.fillMaxSize(), navController = navController) }
                     }
