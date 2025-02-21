@@ -211,8 +211,13 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController, game
                                 .width(maxWidth * 0.2f)
                                 .height(maxHeight * 0.2f)
                                 .clickable {
-                                    navController.navigate("reset")
-                                    vibrate()
+                                    if (gameViewModel.coinsForPlaying > 0) {
+                                        gameViewModel.increaseUsedCoin()
+                                        restartTrigger++
+                                        vibrate()
+                                    } else {
+                                        vibrate()
+                                    }
                                 }
                                 .background(Color.Transparent)
                         )
@@ -516,8 +521,16 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController, game
                             .width(maxWidth * 0.2f)
                             .height(maxHeight * 0.2f)
                             .clickable {
-                                restartTrigger++
-                                vibrate()
+
+
+                                if (gameViewModel.coinsForPlaying > 0) {
+                                    gameViewModel.increaseUsedCoin()
+                                    restartTrigger++
+                                    vibrate()
+                                } else {
+                                    vibrate()
+                                }
+
                             }
                             .background(Color.Transparent)
                     )

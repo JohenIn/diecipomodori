@@ -4,6 +4,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
+
 
 class GameViewModel : ViewModel() {
     // 기본 코인 수 3
@@ -25,8 +29,26 @@ class GameViewModel : ViewModel() {
         }
     }
 
+    // 사용된 코인이 있을 때 1개를 보충하는 함수
+    fun replenishCoin() {
+        if (usedCoin > 0) {
+            usedCoin--
+        }
+    }
+
+
     // 필요에 따라 초기화 함수도 추가 가능
     fun resetCoins() {
         usedCoin = 0
+    }
+
+    init {
+        // 5분(300,000ms)마다 replenishCoin()을 호출하여 코인을 보충합니다.
+        viewModelScope.launch {
+            while (true) {
+                delay(300_000L) // 5분 지연
+                replenishCoin()
+            }
+        }
     }
 }
