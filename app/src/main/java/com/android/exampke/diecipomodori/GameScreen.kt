@@ -75,7 +75,11 @@ import kotlin.random.Random
 
 
 @Composable
-fun GameScreen(modifier: Modifier = Modifier, navController: NavController, gameViewModel: GameViewModel) {
+fun GameScreen(
+    modifier: Modifier = Modifier,
+    navController: NavController,
+    gameViewModel: GameViewModel
+) {
     // 인트로 화면 및 게임 시작 상태
     var gameStarted by remember { mutableStateOf(false) }
     var isPlaying by remember { mutableStateOf(true) }
@@ -266,7 +270,7 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController, game
                                     contentDescription = "coin",
                                     colorFilter = ColorFilter.colorMatrix(ColorMatrix().apply {
                                         setToSaturation(
-                                            0f
+                                            0.2f
                                         )
                                     }),
                                     modifier = Modifier.padding(horizontal = 4.dp)
@@ -339,8 +343,12 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController, game
                             detectDragGestures(
                                 onDragStart = { offset ->
                                     if (timeLeft <= 0) return@detectDragGestures
-                                    val col = (offset.x / cellSize.toPx()).toInt().coerceIn(0, numCols - 1)
-                                    val row = (offset.y / cellSize.toPx()).toInt().coerceIn(0, numRows - 1)
+                                    val col = (offset.x / cellSize.toPx())
+                                        .toInt()
+                                        .coerceIn(0, numCols - 1)
+                                    val row = (offset.y / cellSize.toPx())
+                                        .toInt()
+                                        .coerceIn(0, numRows - 1)
                                     dragStartCell = Pair(row, col)
                                     dragCurrentCell = dragStartCell
                                     freeDragStartOffset = offset
@@ -348,8 +356,12 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController, game
                                 },
                                 onDrag = { change, _ ->
                                     if (timeLeft <= 0) return@detectDragGestures
-                                    val col = (change.position.x / cellSize.toPx()).toInt().coerceIn(0, numCols - 1)
-                                    val row = (change.position.y / cellSize.toPx()).toInt().coerceIn(0, numRows - 1)
+                                    val col = (change.position.x / cellSize.toPx())
+                                        .toInt()
+                                        .coerceIn(0, numCols - 1)
+                                    val row = (change.position.y / cellSize.toPx())
+                                        .toInt()
+                                        .coerceIn(0, numRows - 1)
                                     dragCurrentCell = Pair(row, col)
                                     freeDragCurrentOffset = change.position
                                 },
@@ -393,13 +405,26 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController, game
                             Row {
                                 for (colIndex in 0 until numCols) {
                                     if (board[rowIndex][colIndex] != null) {
-                                        val isSelected = if (dragStartCell != null && dragCurrentCell != null) {
-                                            val minRow = min(dragStartCell!!.first, dragCurrentCell!!.first)
-                                            val maxRow = max(dragStartCell!!.first, dragCurrentCell!!.first)
-                                            val minCol = min(dragStartCell!!.second, dragCurrentCell!!.second)
-                                            val maxCol = max(dragStartCell!!.second, dragCurrentCell!!.second)
-                                            rowIndex in minRow..maxRow && colIndex in minCol..maxCol
-                                        } else false
+                                        val isSelected =
+                                            if (dragStartCell != null && dragCurrentCell != null) {
+                                                val minRow = min(
+                                                    dragStartCell!!.first,
+                                                    dragCurrentCell!!.first
+                                                )
+                                                val maxRow = max(
+                                                    dragStartCell!!.first,
+                                                    dragCurrentCell!!.first
+                                                )
+                                                val minCol = min(
+                                                    dragStartCell!!.second,
+                                                    dragCurrentCell!!.second
+                                                )
+                                                val maxCol = max(
+                                                    dragStartCell!!.second,
+                                                    dragCurrentCell!!.second
+                                                )
+                                                rowIndex in minRow..maxRow && colIndex in minCol..maxCol
+                                            } else false
                                         val imageAlpha = if (isSelected) 1f else 0.5f
 
                                         Box(
@@ -407,7 +432,8 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController, game
                                                 .size(cellSize)
                                                 .padding(1.dp)
                                                 .onGloballyPositioned { coords ->
-                                                    cellBounds[rowIndex to colIndex] = coords.boundsInParent()
+                                                    cellBounds[rowIndex to colIndex] =
+                                                        coords.boundsInParent()
                                                 },
                                             contentAlignment = Alignment.Center
                                         ) {
@@ -471,7 +497,9 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController, game
                         text = score.toString(),
                         fontSize = 32.sp,
                         fontWeight = FontWeight.ExtraBold,
-                        modifier = Modifier.align(Alignment.Center).offset(x = (-20).dp)
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .offset(x = (-20).dp)
                     )
                 }
                 Box {
@@ -598,7 +626,7 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController, game
                                     contentDescription = "coin",
                                     colorFilter = ColorFilter.colorMatrix(ColorMatrix().apply {
                                         setToSaturation(
-                                            0f
+                                            0.2f
                                         )
                                     }),
                                     modifier = Modifier.padding(horizontal = 4.dp)
@@ -622,6 +650,7 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController, game
                             Log.d("GameScreen", adError.toString())
                             interstitialAd = null
                         }
+
                         override fun onAdLoaded(loadedAd: InterstitialAd) {
                             Log.d("GameScreen", "Ad was loaded.")
                             interstitialAd = loadedAd
@@ -630,17 +659,21 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController, game
                                     override fun onAdClicked() {
                                         Log.d("GameScreen", "Ad was clicked.")
                                     }
+
                                     override fun onAdDismissedFullScreenContent() {
                                         Log.d("GameScreen", "Ad dismissed fullscreen content.")
                                         interstitialAd = null
                                     }
+
                                     override fun onAdFailedToShowFullScreenContent(adError: AdError) {
                                         Log.e("GameScreen", "Ad failed to show fullscreen content.")
                                         interstitialAd = null
                                     }
+
                                     override fun onAdImpression() {
                                         Log.d("GameScreen", "Ad recorded an impression.")
                                     }
+
                                     override fun onAdShowedFullScreenContent() {
                                         Log.d("GameScreen", "Ad showed fullscreen content.")
                                     }

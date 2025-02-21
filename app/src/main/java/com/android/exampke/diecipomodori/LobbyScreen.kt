@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -101,7 +102,7 @@ fun LobbyScreen(navController: NavController, gameViewModel: GameViewModel) {
                         contentDescription = "coin",
                         colorFilter = ColorFilter.colorMatrix(ColorMatrix().apply {
                             setToSaturation(
-                                0f
+                                0.2f
                             )
                         }),
                         modifier = Modifier.padding(horizontal = 4.dp)
@@ -109,10 +110,38 @@ fun LobbyScreen(navController: NavController, gameViewModel: GameViewModel) {
                 }
             }
         }
-        Box(modifier = Modifier.align(Alignment.BottomCenter).background(Color.Red)){ Text("광고보고 충전, 지금은 안보고 충전", modifier = Modifier.clickable{
-            gameViewModel.resetCoins()
-            vibrate()
-        }) }
+
+        BoxWithConstraints(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .offset(x = -maxWidth * 0.3f)
+        ) {
+            // 이미지의 하단 20% 영역에 클릭 가능 오버레이 추가
+            Image(
+                painter = painterResource(R.drawable.board_refilltomatoads),
+                contentDescription = "resume",
+                colorFilter = if (gameViewModel.usedCoin == 0) {
+                    ColorFilter.colorMatrix(ColorMatrix().apply {
+                        setToSaturation(
+                            0.1f
+                        )
+                    })
+                } else null,
+                alpha = if (gameViewModel.usedCoin == 0) 0.7f else 1f,
+            )
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .width(maxWidth * 0.13f)
+                    .height(maxHeight * 0.3f)
+                    .clickable(enabled = gameViewModel.usedCoin > 0) {
+                        gameViewModel.resetCoins()
+                        vibrate()
+                    }
+                    .background(Color.Transparent)
+            )
+        }
+
 
         // 상단 로고: 화면 너비의 70%
         Image(
