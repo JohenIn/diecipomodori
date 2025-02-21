@@ -103,14 +103,15 @@ fun GameScreen(
         )
         var restartTrigger by remember { mutableStateOf(0) }
         var score by remember(restartTrigger) { mutableStateOf(0) }
-        var timeLeft by remember(restartTrigger) { mutableStateOf(120) } // 테스트 후 120초로 변경 시간 설정 변수
+        var totalSeconds by remember(restartTrigger) { mutableStateOf(10) }// 테스트 후 120초로 변경 시간 설정 변수
+        var leftSeconds by remember(restartTrigger) { mutableStateOf(totalSeconds) }
 
         // 타이머: 일시정지 상태에서는 업데이트를 잠시 멈춤
         LaunchedEffect(restartTrigger, isPaused) {
-            while (timeLeft > 0) {
+            while (leftSeconds > 0) {
                 if (!isPaused) {
                     delay(1000L)
-                    timeLeft--
+                    leftSeconds--
                 } else {
                     delay(100L)
                 }
@@ -170,7 +171,7 @@ fun GameScreen(
                                         gameViewModel.increaseUsedCoin()
                                         restartTrigger++
                                         score = 0
-                                        timeLeft = 120
+                                        leftSeconds = 120
                                         // 기타 초기화 작업이 필요하다면 추가
                                         isPaused = false
                                         vibrate()
@@ -206,49 +207,8 @@ fun GameScreen(
                             .padding(bottom = 30.dp)
                     )
                 }
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color(0xAA000000)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Image(
-                        painter = painterResource(R.drawable.button_backhomeaftergame),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .clickable {
-                                navController.navigate("lobby")
-                                vibrate()
-                            }
-                            .align(Alignment.TopStart)
-                    )
-                    Image(
-                        painter = painterResource(R.drawable.button_playagain),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .clickable {
-                                restartTrigger++
-                                vibrate()
-                            }
-                            .align(Alignment.TopEnd)
-                    )
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = "Game Finished",
-                            style = MaterialTheme.typography.headlineMedium,
-                            color = Color.White
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "Score: $score",
-                            style = MaterialTheme.typography.headlineSmall,
-                            color = Color.White
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                    }
-                }
             }
-            GameField(restartTrigger, timeLeft, score, context, onScoreChange = { newScore ->
+            GameField(restartTrigger, leftSeconds, score, onScoreChange = { newScore ->
                 score = newScore
             })
 
@@ -283,7 +243,7 @@ fun GameScreen(
                         modifier = Modifier.size(80.dp)
                     )
                     Text(
-                        text = "${timeLeft}s",
+                        text = "${leftSeconds}s",
                         style = MaterialTheme.typography.bodyLarge,
                         fontSize = 18.sp,
                         modifier = Modifier.align(Alignment.Center)
@@ -291,7 +251,7 @@ fun GameScreen(
                 }
                 Spacer(modifier = Modifier.height(20.dp))
                 val animatedProgress by animateFloatAsState(
-                    targetValue = (120 - timeLeft) / 120f,
+                    targetValue = (totalSeconds - leftSeconds) / totalSeconds.toFloat(),
                     animationSpec = tween(durationMillis = 1000, easing = LinearEasing),
                     label = ""
                 )
@@ -303,8 +263,8 @@ fun GameScreen(
                 )
             }
         }
-        LaunchedEffect(timeLeft) {
-            if (timeLeft <= 0) {
+        LaunchedEffect(leftSeconds) {
+            if (leftSeconds <= 0) {
                 isPlaying = false
             }
         }
@@ -317,7 +277,7 @@ fun GameScreen(
             }
         }
         // 게임 종료 오버레이 (if timeLeft <= 0)
-        if (timeLeft <= 0) {
+        if (leftSeconds <= 0) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -346,7 +306,7 @@ fun GameScreen(
                     // 이미지의 하단 20% 영역에 클릭 가능 오버레이 추가
                     Image(
                         painter = painterResource(R.drawable.button_playagain),
-                        contentDescription = "replay",
+                        contentDescription = "play again",
                     )
                     Box(
                         modifier = Modifier
@@ -357,6 +317,7 @@ fun GameScreen(
                                 if (gameViewModel.coinsForPlaying > 0) {
                                     gameViewModel.increaseUsedCoin()
                                     restartTrigger++
+                                    score = 0
                                     vibrate()
                                 } else {
                                     vibrate()

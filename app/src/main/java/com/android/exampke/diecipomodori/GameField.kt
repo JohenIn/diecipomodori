@@ -44,7 +44,6 @@ fun GameField(
     restartTrigger: Int,
     timeLeft: Int,
     score: Int,
-    context: Context,
     onScoreChange: (Int) -> Unit
 ) {
     val numRows = 10
@@ -67,7 +66,7 @@ fun GameField(
             .fillMaxHeight()
             .padding(vertical = 10.dp)
     ) {
-        var pointAsScore by remember { mutableStateOf(score) }
+        var pointAsScore by remember(restartTrigger) { mutableStateOf(score) }
         val availableWidth = maxWidth
         val availableHeight = maxHeight
         val cellSize = min(availableWidth / numCols, availableHeight / numRows)
