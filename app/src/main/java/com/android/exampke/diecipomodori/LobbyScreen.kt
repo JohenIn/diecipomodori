@@ -1,8 +1,10 @@
 package com.android.exampke.diecipomodori
 
+import android.app.Activity
 import android.content.Context
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,7 +21,9 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,13 +40,16 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.android.exampke.diecipomodori.model.MyDb
 import com.android.exampke.diecipomodori.viewmodel.GameViewModel
+import com.google.android.gms.ads.AdError
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.FullScreenContentCallback
+import com.google.android.gms.ads.LoadAdError
+import com.google.android.gms.ads.interstitial.InterstitialAd
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 
 @Composable
 fun LobbyScreen(navController: NavController, gameViewModel: GameViewModel) {
-    // 예시: total coin 개수를 3개로 가정
-    val totalCoins = 3
-    // playCount가 2라면, missingCoin = totalCoins - playCount = 1 -> 1 coin grayscale, 나머지 원본
-    val missingCoins = totalCoins - gameViewModel.defaultCoinCount
+    var viewAds by remember { mutableStateOf(false) }
     BoxWithConstraints(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -57,7 +64,6 @@ fun LobbyScreen(navController: NavController, gameViewModel: GameViewModel) {
                 VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE)
             vibrator.vibrate(vibrationEffect)
         }
-
         // 배경 이미지 (전체 화면)
         Image(
             painter = painterResource(id = R.drawable.lobby_backgroundsvg),
@@ -65,7 +71,6 @@ fun LobbyScreen(navController: NavController, gameViewModel: GameViewModel) {
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
-
         // Play 버튼 이미지 (중앙)
         Image(
             painter = painterResource(id = R.drawable.board_playbutton),
@@ -82,7 +87,6 @@ fun LobbyScreen(navController: NavController, gameViewModel: GameViewModel) {
                     }
                 }
         )
-
         Row(
             modifier = Modifier
                 .align(Alignment.Center)
@@ -135,14 +139,64 @@ fun LobbyScreen(navController: NavController, gameViewModel: GameViewModel) {
                     .width(maxWidth * 0.13f)
                     .height(maxHeight * 0.3f)
                     .clickable(enabled = gameViewModel.usedCoin > 0) {
-                        gameViewModel.resetCoins()
                         vibrate()
+                        viewAds = true
                     }
                     .background(Color.Transparent)
             )
         }
+        Button(onClick = {
+            gameViewModel.resetCoins()
+        }, modifier = Modifier.align(Alignment.BottomCenter)) { Text("Reset Coins") }
+        var interstitialAd by remember { mutableStateOf<InterstitialAd?>(null) }
+        if (viewAds) {
+            val adRequest = AdRequest.Builder().build()
+            InterstitialAd.load(
+                context,
+                "ca-app-pub-3940256099942544/1033173712",
+                adRequest,
+                object : InterstitialAdLoadCallback() {
+                    override fun onAdFailedToLoad(adError: LoadAdError) {
+                        Log.d("GameScreen", adError.toString())
+                        interstitialAd = null
+                    }
 
+                    override fun onAdLoaded(loadedAd: InterstitialAd) {
+                        Log.d("GameScreen", "Ad was loaded.")
+                        interstitialAd = loadedAd
+                        interstitialAd?.fullScreenContentCallback =
+                            object : FullScreenContentCallback() {
+                                override fun onAdClicked() {
+                                    Log.d("GameScreen", "Ad was clicked.")
+                                }
 
+                                override fun onAdDismissedFullScreenContent() {
+                                    Log.d("GameScreen", "Ad dismissed fullscreen content.")
+                                    interstitialAd = null
+                                }
+
+                                override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+                                    Log.e("GameScreen", "Ad failed to show fullscreen content.")
+                                    interstitialAd = null
+                                }
+
+                                override fun onAdImpression() {
+                                    Log.d("GameScreen", "Ad recorded an impression.")
+                                }
+
+                                override fun onAdShowedFullScreenContent() {
+                                    Log.d("GameScreen", "Ad showed fullscreen content.")
+                                }
+                            }
+                        (context as? Activity)?.let { activity ->
+                            interstitialAd?.show(activity)
+                        }
+                    }
+                }
+            )
+            viewAds = false
+            gameViewModel.resetCoins()
+        }
         // 상단 로고: 화면 너비의 70%
         Image(
             painter = painterResource(id = R.drawable.mainlobbylogo),
@@ -152,7 +206,6 @@ fun LobbyScreen(navController: NavController, gameViewModel: GameViewModel) {
                 .align(Alignment.TopCenter)
                 .padding(top = screenHeight * 0.05f) // 예시: 상단 패딩 10% 사용
         )
-
         // 하단 오른쪽 베스트 스코어 영역
         Box(
             modifier = Modifier
@@ -165,67 +218,72 @@ fun LobbyScreen(navController: NavController, gameViewModel: GameViewModel) {
                 contentDescription = "tomato",
                 modifier = Modifier
             )
-            val db = remember { MyDb.getDatabase(context) }
-            val list by db.userDao().getAll().collectAsStateWithLifecycle(emptyList())
-            val maxScore = list.maxOfOrNull { it.score ?: 0 } ?: 0
-
-            Box(modifier = Modifier.align(Alignment.Center)) {
-                // 아웃라인 역할 텍스트 (여러 오프셋)
-                Text(
-                    text = maxScore.toString(),
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .offset(x = (-2).dp, y = (-2).dp),
-                    style = TextStyle(
-                        fontWeight = FontWeight.ExtraBold,
-                        color = Color(0xFF003707),
-                        fontSize = 60.sp
-                    )
-                )
-                Text(
-                    text = maxScore.toString(),
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .offset(x = (2).dp, y = (-2).dp),
-                    style = TextStyle(
-                        fontWeight = FontWeight.ExtraBold,
-                        color = Color(0xFF003707),
-                        fontSize = 60.sp
-                    )
-                )
-                Text(
-                    text = maxScore.toString(),
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .offset(x = (-2).dp, y = (2).dp),
-                    style = TextStyle(
-                        fontWeight = FontWeight.ExtraBold,
-                        color = Color(0xFF003707),
-                        fontSize = 60.sp
-                    )
-                )
-                Text(
-                    text = maxScore.toString(),
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .offset(x = (2).dp, y = (2).dp),
-                    style = TextStyle(
-                        fontWeight = FontWeight.ExtraBold,
-                        color = Color(0xFF003707),
-                        fontSize = 60.sp
-                    )
-                )
-                // 본문 텍스트
-                Text(
-                    text = maxScore.toString(),
-                    modifier = Modifier.align(Alignment.Center),
-                    style = TextStyle(
-                        fontWeight = FontWeight.ExtraBold,
-                        color = Color(0xFFF00E100),
-                        fontSize = 60.sp
-                    )
-                )
-            }
+            BestScore(context, modifier = Modifier.align(Alignment.Center))
         }
+    }
+}
+
+@Composable
+private fun BestScore(context: Context, modifier: Modifier) {
+    val db = remember { MyDb.getDatabase(context) }
+    val list by db.userDao().getAll().collectAsStateWithLifecycle(emptyList())
+    val maxScore = list.maxOfOrNull { it.score ?: 0 } ?: 0
+
+    Box(modifier = modifier) {
+        // 아웃라인 역할 텍스트 (여러 오프셋)
+        Text(
+            text = maxScore.toString(),
+            modifier = Modifier
+                .align(Alignment.Center)
+                .offset(x = (-2).dp, y = (-2).dp),
+            style = TextStyle(
+                fontWeight = FontWeight.ExtraBold,
+                color = Color(0xFF003707),
+                fontSize = 60.sp
+            )
+        )
+        Text(
+            text = maxScore.toString(),
+            modifier = Modifier
+                .align(Alignment.Center)
+                .offset(x = (2).dp, y = (-2).dp),
+            style = TextStyle(
+                fontWeight = FontWeight.ExtraBold,
+                color = Color(0xFF003707),
+                fontSize = 60.sp
+            )
+        )
+        Text(
+            text = maxScore.toString(),
+            modifier = Modifier
+                .align(Alignment.Center)
+                .offset(x = (-2).dp, y = (2).dp),
+            style = TextStyle(
+                fontWeight = FontWeight.ExtraBold,
+                color = Color(0xFF003707),
+                fontSize = 60.sp
+            )
+        )
+        Text(
+            text = maxScore.toString(),
+            modifier = Modifier
+                .align(Alignment.Center)
+                .offset(x = (2).dp, y = (2).dp),
+            style = TextStyle(
+                fontWeight = FontWeight.ExtraBold,
+                color = Color(0xFF003707),
+                fontSize = 60.sp
+            )
+        )
+        // 본문 텍스트
+        Text(
+            text = maxScore.toString(),
+            modifier = Modifier.align(Alignment.Center),
+            style = TextStyle(
+                fontWeight = FontWeight.ExtraBold,
+                color = Color(0xFFF00E100),
+                fontSize = 60.sp
+            )
+        )
     }
 }

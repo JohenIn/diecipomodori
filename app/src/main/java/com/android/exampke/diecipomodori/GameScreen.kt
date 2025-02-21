@@ -1,10 +1,8 @@
 package com.android.exampke.diecipomodori
 
-import android.app.Activity
 import android.content.Context
 import android.os.VibrationEffect
 import android.os.Vibrator
-import android.util.Log
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -60,19 +58,12 @@ import androidx.navigation.NavController
 import com.android.exampke.diecipomodori.model.MyDb
 import com.android.exampke.diecipomodori.model.User
 import com.android.exampke.diecipomodori.viewmodel.GameViewModel
-import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.FullScreenContentCallback
-import com.google.android.gms.ads.LoadAdError
-import com.google.android.gms.ads.interstitial.InterstitialAd
-import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.random.Random
-
 
 @Composable
 fun GameScreen(
@@ -85,8 +76,6 @@ fun GameScreen(
     var isPlaying by remember { mutableStateOf(true) }
     // 일시정지 상태 변수
     var isPaused by remember { mutableStateOf(false) }
-    // playCount를 게임 종료 시마다 증가시키도록 관리한다고 가정합니다.
-    var playCount by remember { mutableStateOf(0) }
     val context = LocalContext.current
     val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
     val vibrate: () -> Unit = {
@@ -94,7 +83,6 @@ fun GameScreen(
             VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE)
         vibrator.vibrate(vibrationEffect)
     }
-
     if (!gameStarted) {
         Box(
             modifier = modifier.fillMaxSize(),
@@ -149,7 +137,7 @@ fun GameScreen(
             }
         }
         var score by remember(restartTrigger) { mutableStateOf(0) }
-        var timeLeft by remember(restartTrigger) { mutableStateOf(3) } // 테스트 후 120초로 변경 시간 설정 변수
+        var timeLeft by remember(restartTrigger) { mutableStateOf(120) } // 테스트 후 120초로 변경 시간 설정 변수
         var dragStartCell by remember(restartTrigger) { mutableStateOf<Pair<Int, Int>?>(null) }
         var dragCurrentCell by remember(restartTrigger) { mutableStateOf<Pair<Int, Int>?>(null) }
         val cellBounds = remember(restartTrigger) { mutableStateMapOf<Pair<Int, Int>, Rect>() }
@@ -167,7 +155,6 @@ fun GameScreen(
                 }
             }
         }
-
         // 전체 UI를 Row로 구성: 왼쪽은 게임 그리드, 오른쪽은 사이드바
         Row(modifier = Modifier.fillMaxSize()) {
             Image(
@@ -279,8 +266,6 @@ fun GameScreen(
                         }
                     }
                 }
-
-
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -322,7 +307,6 @@ fun GameScreen(
                         Spacer(modifier = Modifier.height(16.dp))
                     }
                 }
-                //
             }
             BoxWithConstraints(
                 modifier = Modifier
@@ -528,8 +512,6 @@ fun GameScreen(
                         .padding(bottom = 10.dp)
                 )
             }
-
-
         }
         LaunchedEffect(timeLeft) {
             if (timeLeft <= 0) {
@@ -542,7 +524,6 @@ fun GameScreen(
                 withContext(Dispatchers.IO) {
                     db.userDao().insertIfHigher(User(score = score))
                 }
-                playCount++
             }
         }
         // 게임 종료 오버레이 (if timeLeft <= 0)
@@ -590,7 +571,6 @@ fun GameScreen(
                                 } else {
                                     vibrate()
                                 }
-
                             }
                             .background(Color.Transparent)
                     )
@@ -635,56 +615,6 @@ fun GameScreen(
                         }
                     }
                 }
-            }
-        }
-        var interstitialAd by remember { mutableStateOf<InterstitialAd?>(null) }
-        LaunchedEffect(playCount) {
-            if (playCount >= 120) {
-                val adRequest = AdRequest.Builder().build()
-                InterstitialAd.load(
-                    context,
-                    "ca-app-pub-3940256099942544/1033173712",
-                    adRequest,
-                    object : InterstitialAdLoadCallback() {
-                        override fun onAdFailedToLoad(adError: LoadAdError) {
-                            Log.d("GameScreen", adError.toString())
-                            interstitialAd = null
-                        }
-
-                        override fun onAdLoaded(loadedAd: InterstitialAd) {
-                            Log.d("GameScreen", "Ad was loaded.")
-                            interstitialAd = loadedAd
-                            interstitialAd?.fullScreenContentCallback =
-                                object : FullScreenContentCallback() {
-                                    override fun onAdClicked() {
-                                        Log.d("GameScreen", "Ad was clicked.")
-                                    }
-
-                                    override fun onAdDismissedFullScreenContent() {
-                                        Log.d("GameScreen", "Ad dismissed fullscreen content.")
-                                        interstitialAd = null
-                                    }
-
-                                    override fun onAdFailedToShowFullScreenContent(adError: AdError) {
-                                        Log.e("GameScreen", "Ad failed to show fullscreen content.")
-                                        interstitialAd = null
-                                    }
-
-                                    override fun onAdImpression() {
-                                        Log.d("GameScreen", "Ad recorded an impression.")
-                                    }
-
-                                    override fun onAdShowedFullScreenContent() {
-                                        Log.d("GameScreen", "Ad showed fullscreen content.")
-                                    }
-                                }
-                            (context as? Activity)?.let { activity ->
-                                interstitialAd?.show(activity)
-                            }
-                        }
-                    }
-                )
-                playCount = 0
             }
         }
     }
