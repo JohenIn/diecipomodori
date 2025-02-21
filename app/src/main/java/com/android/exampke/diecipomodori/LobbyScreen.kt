@@ -34,6 +34,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -71,6 +72,7 @@ fun LobbyScreen(navController: NavController, gameViewModel: GameViewModel) {
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
+
         // Play 버튼 이미지 (중앙)
         Image(
             painter = painterResource(id = R.drawable.board_playbutton),
@@ -87,7 +89,13 @@ fun LobbyScreen(navController: NavController, gameViewModel: GameViewModel) {
                     }
                 }
         )
-        TomatoCoinCount(gameViewModel, modifier = Modifier.align(Alignment.Center).padding(top = 30.dp))
+
+        TomatoCoinCount(
+            gameViewModel,
+            modifier = Modifier
+                .align(Alignment.Center)
+                .padding(top = 30.dp)
+        )
 
         BoxWithConstraints(
             modifier = Modifier
@@ -119,9 +127,14 @@ fun LobbyScreen(navController: NavController, gameViewModel: GameViewModel) {
                     .background(Color.Transparent)
             )
         }
-        Button(onClick = {
-            gameViewModel.resetCoins()
-        }, modifier = Modifier.align(Alignment.BottomCenter)) { Text("Reset Coins") }
+        Button(
+            onClick = {
+                gameViewModel.resetCoins()
+            },
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+        ) { Text("Reset Coins") }
+
         var interstitialAd by remember { mutableStateOf<InterstitialAd?>(null) }
         if (viewAds) {
             val adRequest = AdRequest.Builder().build()
@@ -174,26 +187,34 @@ fun LobbyScreen(navController: NavController, gameViewModel: GameViewModel) {
         // 상단 로고: 화면 너비의 70%
         Image(
             painter = painterResource(id = R.drawable.mainlobbylogo),
-            contentDescription = "tomato",
+            contentDescription = "top logo",
             modifier = Modifier
                 .fillMaxWidth(0.7f)
                 .align(Alignment.TopCenter)
                 .padding(top = screenHeight * 0.05f) // 예시: 상단 패딩 10% 사용
         )
         // 하단 오른쪽 베스트 스코어 영역
-        Box(
+        BestScoreBoard(
+            screenWidth,
+            modifier = Modifier.align(Alignment.BottomEnd),
+            context = context
+        )
+    }
+}
+
+@Composable
+private fun BestScoreBoard(screenWidth: Dp, context: Context, modifier: Modifier) {
+    Box(
+        modifier = modifier
+            .width(screenWidth * (0.3f))
+            .padding(end = screenWidth * (0.05f))
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.board_bestscore),
+            contentDescription = "tomato",
             modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .width(screenWidth * (0.3f))
-                .padding(end = screenWidth * (0.05f))
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.board_bestscore),
-                contentDescription = "tomato",
-                modifier = Modifier
-            )
-            BestScore(context, modifier = Modifier.align(Alignment.Center))
-        }
+        )
+        BestScore(context, modifier = Modifier.align(Alignment.Center))
     }
 }
 
