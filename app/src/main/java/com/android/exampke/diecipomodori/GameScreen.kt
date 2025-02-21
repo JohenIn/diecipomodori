@@ -489,26 +489,42 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController) {
                     .background(Color(0xAA000000)),
                 contentAlignment = Alignment.Center
             ) {
-                Image(
-                    painter = painterResource(R.drawable.button_backhomeaftergame),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .clickable {
-                            navController.navigate("lobby")
-                            vibrate()
-                        }
-                        .align(Alignment.TopStart)
-                )
-                Image(
-                    painter = painterResource(R.drawable.button_replay),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .clickable {
-                            restartTrigger++
-                            vibrate()
-                        }
-                        .align(Alignment.TopEnd)
-                )
+                BoxWithConstraints(modifier = Modifier.align(Alignment.TopStart)) {
+                    // 이미지의 하단 20% 영역에 클릭 가능 오버레이 추가
+                    Image(
+                        painter = painterResource(R.drawable.button_backhomeaftergame),
+                        contentDescription = "lobby",
+                    )
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .width(maxWidth * 0.2f)
+                            .height(maxHeight * 0.2f)
+                            .clickable {
+                                navController.navigate("lobby")
+                                vibrate()
+                            }
+                            .background(Color.Transparent)
+                    )
+                }
+                BoxWithConstraints(modifier = Modifier.align(Alignment.TopEnd)) {
+                    // 이미지의 하단 20% 영역에 클릭 가능 오버레이 추가
+                    Image(
+                        painter = painterResource(R.drawable.button_replay),
+                        contentDescription = "replay",
+                    )
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .width(maxWidth * 0.2f)
+                            .height(maxHeight * 0.2f)
+                            .clickable {
+                                restartTrigger++
+                                vibrate()
+                            }
+                            .background(Color.Transparent)
+                    )
+                }
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = "Game Finished",
