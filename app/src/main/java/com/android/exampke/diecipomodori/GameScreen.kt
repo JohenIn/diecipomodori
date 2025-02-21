@@ -127,22 +127,8 @@ fun GameScreen(
                 .zIndex(-1f)
         )
         var restartTrigger by remember { mutableStateOf(0) }
-        val numRows = 10
-        val numCols = 17
-        val board = remember(restartTrigger) {
-            mutableStateListOf<MutableList<Int?>>().apply {
-                repeat(numRows) {
-                    add(MutableList(numCols) { Random.nextInt(1, 10) })
-                }
-            }
-        }
         var score by remember(restartTrigger) { mutableStateOf(0) }
-        var timeLeft by remember(restartTrigger) { mutableStateOf(3) } // 테스트 후 120초로 변경 시간 설정 변수
-        var dragStartCell by remember(restartTrigger) { mutableStateOf<Pair<Int, Int>?>(null) }
-        var dragCurrentCell by remember(restartTrigger) { mutableStateOf<Pair<Int, Int>?>(null) }
-        val cellBounds = remember(restartTrigger) { mutableStateMapOf<Pair<Int, Int>, Rect>() }
-        var freeDragStartOffset by remember { mutableStateOf<Offset?>(null) }
-        var freeDragCurrentOffset by remember { mutableStateOf<Offset?>(null) }
+        var timeLeft by remember(restartTrigger) { mutableStateOf(120) } // 테스트 후 120초로 변경 시간 설정 변수
 
         // 타이머: 일시정지 상태에서는 업데이트를 잠시 멈춤
         LaunchedEffect(restartTrigger, isPaused) {
@@ -238,7 +224,12 @@ fun GameScreen(
                                 .background(Color.Transparent)
                         )
                     }
-                    TomatoCoinCount(gameViewModel, modifier = Modifier.align(Alignment.Center).padding(bottom = 30.dp))
+                    TomatoCoinCount(
+                        gameViewModel,
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .padding(bottom = 30.dp)
+                    )
                 }
                 Box(
                     modifier = Modifier
@@ -282,160 +273,10 @@ fun GameScreen(
                     }
                 }
             }
-            BoxWithConstraints(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .padding(vertical = 10.dp)
-            ) {
-                val availableWidth = maxWidth
-                val availableHeight = maxHeight
-                val cellSize = min(availableWidth / numCols, availableHeight / numRows)
-                val gridWidth = cellSize * numCols
-                val gridHeight = cellSize * numRows
+            GameField(restartTrigger, timeLeft, score, context, onScoreChange = { newScore ->
+                score = newScore
+            })
 
-                Box(
-                    modifier = Modifier
-                        .size(gridWidth, gridHeight)
-                        .align(Alignment.Center)
-                        .pointerInput(restartTrigger) {
-                            detectDragGestures(
-                                onDragStart = { offset ->
-                                    if (timeLeft <= 0) return@detectDragGestures
-                                    val col = (offset.x / cellSize.toPx())
-                                        .toInt()
-                                        .coerceIn(0, numCols - 1)
-                                    val row = (offset.y / cellSize.toPx())
-                                        .toInt()
-                                        .coerceIn(0, numRows - 1)
-                                    dragStartCell = Pair(row, col)
-                                    dragCurrentCell = dragStartCell
-                                    freeDragStartOffset = offset
-                                    freeDragCurrentOffset = offset
-                                },
-                                onDrag = { change, _ ->
-                                    if (timeLeft <= 0) return@detectDragGestures
-                                    val col = (change.position.x / cellSize.toPx())
-                                        .toInt()
-                                        .coerceIn(0, numCols - 1)
-                                    val row = (change.position.y / cellSize.toPx())
-                                        .toInt()
-                                        .coerceIn(0, numRows - 1)
-                                    dragCurrentCell = Pair(row, col)
-                                    freeDragCurrentOffset = change.position
-                                },
-                                onDragEnd = {
-                                    if (timeLeft <= 0) return@detectDragGestures
-                                    if (dragStartCell != null && dragCurrentCell != null) {
-                                        val (startRow, startCol) = dragStartCell!!
-                                        val (endRow, endCol) = dragCurrentCell!!
-                                        val minRow = min(startRow, endRow)
-                                        val maxRow = max(startRow, endRow)
-                                        val minCol = min(startCol, endCol)
-                                        val maxCol = max(startCol, endCol)
-                                        val sum = (minRow..maxRow).sumOf { row ->
-                                            (minCol..maxCol).sumOf { col ->
-                                                board[row][col] ?: 0
-                                            }
-                                        }
-                                        if (sum == 10) {
-                                            for (row in minRow..maxRow) {
-                                                for (col in minCol..maxCol) {
-                                                    if (board[row][col] != null) {
-                                                        board[row][col] = null
-                                                        score++
-                                                        vibrate()
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                    dragStartCell = null
-                                    dragCurrentCell = null
-                                    freeDragStartOffset = null
-                                    freeDragCurrentOffset = null
-                                }
-                            )
-                        }
-                        .onGloballyPositioned { /* 이미 로컬 좌표 사용 */ }
-                ) {
-                    Column {
-                        for (rowIndex in 0 until numRows) {
-                            Row {
-                                for (colIndex in 0 until numCols) {
-                                    if (board[rowIndex][colIndex] != null) {
-                                        val isSelected =
-                                            if (dragStartCell != null && dragCurrentCell != null) {
-                                                val minRow = min(
-                                                    dragStartCell!!.first,
-                                                    dragCurrentCell!!.first
-                                                )
-                                                val maxRow = max(
-                                                    dragStartCell!!.first,
-                                                    dragCurrentCell!!.first
-                                                )
-                                                val minCol = min(
-                                                    dragStartCell!!.second,
-                                                    dragCurrentCell!!.second
-                                                )
-                                                val maxCol = max(
-                                                    dragStartCell!!.second,
-                                                    dragCurrentCell!!.second
-                                                )
-                                                rowIndex in minRow..maxRow && colIndex in minCol..maxCol
-                                            } else false
-                                        val imageAlpha = if (isSelected) 1f else 0.5f
-
-                                        Box(
-                                            modifier = Modifier
-                                                .size(cellSize)
-                                                .padding(1.dp)
-                                                .onGloballyPositioned { coords ->
-                                                    cellBounds[rowIndex to colIndex] =
-                                                        coords.boundsInParent()
-                                                },
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Image(
-                                                painter = painterResource(id = R.drawable.numbertomato),
-                                                contentDescription = "tomato",
-                                                alpha = imageAlpha
-                                            )
-                                            Text(
-                                                text = board[rowIndex][colIndex].toString(),
-                                                fontSize = 16.sp,
-                                                fontWeight = FontWeight.ExtraBold
-                                            )
-                                        }
-                                    } else {
-                                        Spacer(modifier = Modifier.size(cellSize))
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    if (freeDragStartOffset != null && freeDragCurrentOffset != null) {
-                        val topLeft = Offset(
-                            x = min(freeDragStartOffset!!.x, freeDragCurrentOffset!!.x),
-                            y = min(freeDragStartOffset!!.y, freeDragCurrentOffset!!.y)
-                        )
-                        val bottomRight = Offset(
-                            x = max(freeDragStartOffset!!.x, freeDragCurrentOffset!!.x),
-                            y = max(freeDragStartOffset!!.y, freeDragCurrentOffset!!.y)
-                        )
-                        Canvas(modifier = Modifier.matchParentSize()) {
-                            drawRect(
-                                color = Color.Yellow,
-                                topLeft = topLeft,
-                                size = Size(
-                                    width = bottomRight.x - topLeft.x,
-                                    height = bottomRight.y - topLeft.y
-                                ),
-                                style = Stroke(width = 3.dp.toPx())
-                            )
-                        }
-                    }
-                }
-            }
             // 우측 사이드바: 점수, 시간, 진행률 및 시계 배경을 Column으로 배치
             Column(
                 modifier = Modifier
