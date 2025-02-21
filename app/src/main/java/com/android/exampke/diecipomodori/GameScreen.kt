@@ -43,6 +43,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.boundsInParent
@@ -114,6 +116,7 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController, game
                         .width(maxWidth * 0.2f)
                         .height(maxHeight * 0.2f)
                         .clickable {
+                            gameViewModel.increaseUsedCoin()
                             vibrate()
                             gameStarted = true
                             isPlaying = true
@@ -214,6 +217,10 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController, game
                                     if (gameViewModel.coinsForPlaying > 0) {
                                         gameViewModel.increaseUsedCoin()
                                         restartTrigger++
+                                        score = 0
+                                        timeLeft = 120
+                                        // 기타 초기화 작업이 필요하다면 추가
+                                        isPaused = false
                                         vibrate()
                                     } else {
                                         vibrate()
@@ -239,6 +246,33 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController, game
                                 }
                                 .background(Color.Transparent)
                         )
+                    }
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .padding(bottom = 30.dp)
+                    ) {
+                        for (i in 0 until gameViewModel.defaultCoinCount) {
+                            if (i < gameViewModel.coinsForPlaying) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.coin_tomato),
+                                    contentDescription = "coin",
+                                    modifier = Modifier.padding(horizontal = 4.dp)
+                                )
+                            } else {
+                                // grayscale 처리: 채도를 0으로
+                                Image(
+                                    painter = painterResource(id = R.drawable.coin_tomato),
+                                    contentDescription = "coin",
+                                    colorFilter = ColorFilter.colorMatrix(ColorMatrix().apply {
+                                        setToSaturation(
+                                            0f
+                                        )
+                                    }),
+                                    modifier = Modifier.padding(horizontal = 4.dp)
+                                )
+                            }
+                        }
                     }
                 }
 
@@ -521,8 +555,6 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController, game
                             .width(maxWidth * 0.2f)
                             .height(maxHeight * 0.2f)
                             .clickable {
-
-
                                 if (gameViewModel.coinsForPlaying > 0) {
                                     gameViewModel.increaseUsedCoin()
                                     restartTrigger++
@@ -548,6 +580,32 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController, game
                         color = Color.White
                     )
                     Spacer(modifier = Modifier.height(16.dp))
+                    Row(
+                        modifier = Modifier
+                            .padding(top = 30.dp)
+                    ) {
+                        for (i in 0 until gameViewModel.defaultCoinCount) {
+                            if (i < gameViewModel.coinsForPlaying) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.coin_tomato),
+                                    contentDescription = "coin",
+                                    modifier = Modifier.padding(horizontal = 4.dp)
+                                )
+                            } else {
+                                // grayscale 처리: 채도를 0으로
+                                Image(
+                                    painter = painterResource(id = R.drawable.coin_tomato),
+                                    contentDescription = "coin",
+                                    colorFilter = ColorFilter.colorMatrix(ColorMatrix().apply {
+                                        setToSaturation(
+                                            0f
+                                        )
+                                    }),
+                                    modifier = Modifier.padding(horizontal = 4.dp)
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }

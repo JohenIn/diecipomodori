@@ -5,19 +5,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.android.exampke.diecipomodori.data.CoinRepository
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
 class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val coinRepo = CoinRepository(application.applicationContext)
 
-
     // 기본 코인 수 3
-    var defaultCoinCount by mutableStateOf(3)
+    var defaultCoinCount by mutableStateOf(5)
         private set
 
     // 사용된 코인 수, SharedPreferences에서 불러오기
@@ -28,7 +26,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     val coinsForPlaying: Int
         get() = defaultCoinCount - usedCoin
 
-    // Play 버튼을 누를 때마다 usedCoin 증가 (최대 defaultCoinCount까지만 증가)
+    //usedCoin 증가 (최대 defaultCoinCount까지만 증가)
     fun increaseUsedCoin() {
         if (usedCoin < defaultCoinCount) {
             usedCoin++
@@ -36,7 +34,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    // 사용된 코인이 있을 때 1개를 보충하는 함수
+    //코인 보충
     fun replenishCoin() {
         if (usedCoin > 0) {
             usedCoin--
@@ -44,8 +42,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-
-    // 필요에 따라 초기화 함수도 추가 가능
+    // usedCoin 초기화
     fun resetCoins() {
         usedCoin = 0
         coinRepo.saveUsedCoin(usedCoin)

@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.VibrationEffect
 import android.os.Vibrator
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -72,7 +74,6 @@ fun LobbyScreen(navController: NavController, gameViewModel: GameViewModel) {
                 .offset(y = (-screenHeight * (0.18f)))
                 .clickable {
                     if (gameViewModel.coinsForPlaying > 0) {
-                        gameViewModel.increaseUsedCoin()
                         navController.navigate("game")
                         vibrate()
                     } else {
@@ -108,7 +109,10 @@ fun LobbyScreen(navController: NavController, gameViewModel: GameViewModel) {
                 }
             }
         }
-
+        Box(modifier = Modifier.align(Alignment.BottomCenter).background(Color.Red)){ Text("광고보고 충전, 지금은 안보고 충전", modifier = Modifier.clickable{
+            gameViewModel.resetCoins()
+            vibrate()
+        }) }
 
         // 상단 로고: 화면 너비의 70%
         Image(
