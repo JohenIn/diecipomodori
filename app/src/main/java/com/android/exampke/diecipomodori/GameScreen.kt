@@ -257,7 +257,7 @@ fun GameScreen(
                             .align(Alignment.TopStart)
                     )
                     Image(
-                        painter = painterResource(R.drawable.button_replay),
+                        painter = painterResource(R.drawable.button_playagain),
                         contentDescription = null,
                         modifier = Modifier
                             .clickable {
@@ -529,7 +529,7 @@ fun GameScreen(
                 BoxWithConstraints(modifier = Modifier.align(Alignment.TopEnd)) {
                     // 이미지의 하단 20% 영역에 클릭 가능 오버레이 추가
                     Image(
-                        painter = painterResource(R.drawable.button_replay),
+                        painter = painterResource(R.drawable.button_playagain),
                         contentDescription = "replay",
                     )
                     Box(
