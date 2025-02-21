@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -33,9 +32,14 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.android.exampke.diecipomodori.model.MyDb
+import com.android.exampke.diecipomodori.viewmodel.GameViewModel
 
 @Composable
-fun LobbyScreen(navController: NavController) {
+fun LobbyScreen(navController: NavController, gameViewModel: GameViewModel) {
+    // 예시: total coin 개수를 3개로 가정
+    val totalCoins = 3
+    // playCount가 2라면, missingCoin = totalCoins - playCount = 1 -> 1 coin grayscale, 나머지 원본
+    val missingCoins = totalCoins - gameViewModel.defaultCoinCount
     BoxWithConstraints(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -67,35 +71,42 @@ fun LobbyScreen(navController: NavController) {
                 .align(Alignment.Center)
                 .offset(y = (-screenHeight * (0.18f)))
                 .clickable {
-                    navController.navigate("game")
-                    vibrate()
+                    if (gameViewModel.coinsForPlaying > 0) {
+                        gameViewModel.increaseUsedCoin()
+                        navController.navigate("game")
+                        vibrate()
+                    } else {
+                        vibrate()
+                    }
                 }
         )
-        Row(modifier = Modifier.align(Alignment.Center).padding(top = 30.dp)) {
-            Image(
-                painter = painterResource(id = R.drawable.coin_tomato),
-                contentDescription = "coin",
-                colorFilter = ColorFilter.colorMatrix(
-                    ColorMatrix().apply { setToSaturation(0.1f) }
-                ),
-                modifier = Modifier
-                    .clickable {
-                    }
-            )
-            Image(
-                painter = painterResource(id = R.drawable.coin_tomato),
-                contentDescription = "coin",
-                modifier = Modifier
-                    .clickable {
-                    }
-            )
-            Image(
-                painter = painterResource(id = R.drawable.coin_tomato),
-                contentDescription = "coin",
-                modifier = Modifier
-                    .clickable {
-                    }
-            )
+
+        Row(
+            modifier = Modifier
+                .align(Alignment.Center)
+                .padding(top = 30.dp)
+        ) {
+            for (i in 0 until gameViewModel.defaultCoinCount) {
+                if (i < gameViewModel.coinsForPlaying) {
+                    Image(
+                        painter = painterResource(id = R.drawable.coin_tomato),
+                        contentDescription = "coin",
+                        modifier = Modifier.padding(horizontal = 4.dp)
+                    )
+                } else {
+                    // grayscale 처리: 채도를 0으로
+                    Image(
+                        painter = painterResource(id = R.drawable.coin_tomato),
+                        contentDescription = "coin",
+                        colorFilter = ColorFilter.colorMatrix(ColorMatrix().apply {
+                            setToSaturation(
+                                0f
+                            )
+                        }),
+                        modifier = Modifier.padding(horizontal = 4.dp)
+                    )
+                }
+            }
         }
 
 

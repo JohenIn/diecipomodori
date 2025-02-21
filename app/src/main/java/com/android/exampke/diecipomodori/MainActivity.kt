@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -16,12 +17,15 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.android.exampke.diecipomodori.ui.theme.DieciPomodoriTheme
+import com.android.exampke.diecipomodori.viewmodel.GameViewModel
 import com.google.android.gms.ads.MobileAds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
+    private val gameViewModel: GameViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // 전체 화면 모드 설정 (상태바, 네비게이션바 숨김)
@@ -52,8 +56,8 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.padding(innerPadding)
                     ) {
                         composable("splash") { SplashScreen(navController = navController) }
-                        composable("lobby") { LobbyScreen(navController = navController) }
-                        composable("game") { GameScreen(modifier = Modifier.fillMaxSize(), navController = navController) }
+                        composable("lobby") { LobbyScreen(navController = navController, gameViewModel = gameViewModel) }
+                        composable("game") { GameScreen(modifier = Modifier.fillMaxSize(), navController = navController, gameViewModel = gameViewModel) }
                     }
                 }
             }

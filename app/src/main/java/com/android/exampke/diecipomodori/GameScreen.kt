@@ -5,7 +5,6 @@ import android.content.Context
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.util.Log
-import androidx.activity.ComponentActivity
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -22,13 +21,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -47,7 +44,6 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.boundsInParent
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -61,6 +57,7 @@ import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import com.android.exampke.diecipomodori.model.MyDb
 import com.android.exampke.diecipomodori.model.User
+import com.android.exampke.diecipomodori.viewmodel.GameViewModel
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.FullScreenContentCallback
@@ -76,7 +73,7 @@ import kotlin.random.Random
 
 
 @Composable
-fun GameScreen(modifier: Modifier = Modifier, navController: NavController) {
+fun GameScreen(modifier: Modifier = Modifier, navController: NavController, gameViewModel: GameViewModel) {
     // 인트로 화면 및 게임 시작 상태
     var gameStarted by remember { mutableStateOf(false) }
     var isPlaying by remember { mutableStateOf(true) }
@@ -145,7 +142,7 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController) {
             }
         }
         var score by remember(restartTrigger) { mutableStateOf(0) }
-        var timeLeft by remember(restartTrigger) { mutableStateOf(120) } // 테스트 후 120초로 변경
+        var timeLeft by remember(restartTrigger) { mutableStateOf(3) } // 테스트 후 120초로 변경 시간 설정 변수
         var dragStartCell by remember(restartTrigger) { mutableStateOf<Pair<Int, Int>?>(null) }
         var dragCurrentCell by remember(restartTrigger) { mutableStateOf<Pair<Int, Int>?>(null) }
         val cellBounds = remember(restartTrigger) { mutableStateMapOf<Pair<Int, Int>, Rect>() }
