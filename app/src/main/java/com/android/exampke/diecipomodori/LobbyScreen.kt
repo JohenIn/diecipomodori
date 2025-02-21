@@ -87,33 +87,7 @@ fun LobbyScreen(navController: NavController, gameViewModel: GameViewModel) {
                     }
                 }
         )
-        Row(
-            modifier = Modifier
-                .align(Alignment.Center)
-                .padding(top = 30.dp)
-        ) {
-            for (i in 0 until gameViewModel.defaultCoinCount) {
-                if (i < gameViewModel.coinsForPlaying) {
-                    Image(
-                        painter = painterResource(id = R.drawable.coin_tomato),
-                        contentDescription = "coin",
-                        modifier = Modifier.padding(horizontal = 4.dp)
-                    )
-                } else {
-                    // grayscale 처리: 채도를 0으로
-                    Image(
-                        painter = painterResource(id = R.drawable.coin_tomato),
-                        contentDescription = "coin",
-                        colorFilter = ColorFilter.colorMatrix(ColorMatrix().apply {
-                            setToSaturation(
-                                0.2f
-                            )
-                        }),
-                        modifier = Modifier.padding(horizontal = 4.dp)
-                    )
-                }
-            }
-        }
+        TomatoCoinCount(gameViewModel, modifier = Modifier.align(Alignment.Center).padding(top = 30.dp))
 
         BoxWithConstraints(
             modifier = Modifier
@@ -219,6 +193,35 @@ fun LobbyScreen(navController: NavController, gameViewModel: GameViewModel) {
                 modifier = Modifier
             )
             BestScore(context, modifier = Modifier.align(Alignment.Center))
+        }
+    }
+}
+
+@Composable
+fun TomatoCoinCount(gameViewModel: GameViewModel, modifier: Modifier) {
+    Row(
+        modifier = modifier
+    ) {
+        for (i in 0 until gameViewModel.defaultCoinCount) {
+            if (i < gameViewModel.coinsForPlaying) {
+                Image(
+                    painter = painterResource(id = R.drawable.coin_tomato),
+                    contentDescription = "coin",
+                    modifier = Modifier.padding(horizontal = 4.dp)
+                )
+            } else {
+                // grayscale 처리: 채도를 0으로
+                Image(
+                    painter = painterResource(id = R.drawable.coin_tomato),
+                    contentDescription = "coin",
+                    colorFilter = ColorFilter.colorMatrix(ColorMatrix().apply {
+                        setToSaturation(
+                            0.2f
+                        )
+                    }),
+                    modifier = Modifier.padding(horizontal = 4.dp)
+                )
+            }
         }
     }
 }

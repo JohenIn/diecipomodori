@@ -137,7 +137,7 @@ fun GameScreen(
             }
         }
         var score by remember(restartTrigger) { mutableStateOf(0) }
-        var timeLeft by remember(restartTrigger) { mutableStateOf(120) } // 테스트 후 120초로 변경 시간 설정 변수
+        var timeLeft by remember(restartTrigger) { mutableStateOf(3) } // 테스트 후 120초로 변경 시간 설정 변수
         var dragStartCell by remember(restartTrigger) { mutableStateOf<Pair<Int, Int>?>(null) }
         var dragCurrentCell by remember(restartTrigger) { mutableStateOf<Pair<Int, Int>?>(null) }
         val cellBounds = remember(restartTrigger) { mutableStateMapOf<Pair<Int, Int>, Rect>() }
@@ -238,33 +238,7 @@ fun GameScreen(
                                 .background(Color.Transparent)
                         )
                     }
-                    Row(
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .padding(bottom = 30.dp)
-                    ) {
-                        for (i in 0 until gameViewModel.defaultCoinCount) {
-                            if (i < gameViewModel.coinsForPlaying) {
-                                Image(
-                                    painter = painterResource(id = R.drawable.coin_tomato),
-                                    contentDescription = "coin",
-                                    modifier = Modifier.padding(horizontal = 4.dp)
-                                )
-                            } else {
-                                // grayscale 처리: 채도를 0으로
-                                Image(
-                                    painter = painterResource(id = R.drawable.coin_tomato),
-                                    contentDescription = "coin",
-                                    colorFilter = ColorFilter.colorMatrix(ColorMatrix().apply {
-                                        setToSaturation(
-                                            0.2f
-                                        )
-                                    }),
-                                    modifier = Modifier.padding(horizontal = 4.dp)
-                                )
-                            }
-                        }
-                    }
+                    TomatoCoinCount(gameViewModel, modifier = Modifier.align(Alignment.Center).padding(bottom = 30.dp))
                 }
                 Box(
                     modifier = Modifier
@@ -588,32 +562,7 @@ fun GameScreen(
                         color = Color.White
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    Row(
-                        modifier = Modifier
-                            .padding(top = 30.dp)
-                    ) {
-                        for (i in 0 until gameViewModel.defaultCoinCount) {
-                            if (i < gameViewModel.coinsForPlaying) {
-                                Image(
-                                    painter = painterResource(id = R.drawable.coin_tomato),
-                                    contentDescription = "coin",
-                                    modifier = Modifier.padding(horizontal = 4.dp)
-                                )
-                            } else {
-                                // grayscale 처리: 채도를 0으로
-                                Image(
-                                    painter = painterResource(id = R.drawable.coin_tomato),
-                                    contentDescription = "coin",
-                                    colorFilter = ColorFilter.colorMatrix(ColorMatrix().apply {
-                                        setToSaturation(
-                                            0.2f
-                                        )
-                                    }),
-                                    modifier = Modifier.padding(horizontal = 4.dp)
-                                )
-                            }
-                        }
-                    }
+                    TomatoCoinCount(gameViewModel, modifier = Modifier.padding(top = 30.dp))
                 }
             }
         }
