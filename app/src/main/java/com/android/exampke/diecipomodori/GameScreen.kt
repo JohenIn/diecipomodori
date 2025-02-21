@@ -105,17 +105,25 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController) {
                     .zIndex(-1f)
                     .alpha(0.5f)
             )
-            Image(
-                painter = painterResource(R.drawable.startbutton),
-                contentDescription = null,
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .clickable {
-                        vibrate()
-                        gameStarted = true
-                        isPlaying = true
-                    }
-            )
+            BoxWithConstraints(modifier = Modifier.align(Alignment.TopCenter)) {
+                // 이미지의 하단 20% 영역에 클릭 가능 오버레이 추가
+                Image(
+                    painter = painterResource(R.drawable.startbutton),
+                    contentDescription = null,
+                )
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .width(maxWidth * 0.2f)
+                        .height(maxHeight * 0.2f)
+                        .clickable {
+                            vibrate()
+                            gameStarted = true
+                            isPlaying = true
+                        }
+                        .background(Color.Transparent)
+                )
+            }
         }
     } else {
         // 게임 진행 상태
@@ -158,15 +166,6 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController) {
 
         // 전체 UI를 Row로 구성: 왼쪽은 게임 그리드, 오른쪽은 사이드바
         Row(modifier = Modifier.fillMaxSize()) {
-            // Pause 버튼 (상단 좌측)
-//            Button(
-//                onClick = { isPaused = true },
-//                modifier = Modifier
-//                    .padding(16.dp)
-//                    .weight(1f)
-//            ) {
-//                Text("Pause")
-//            }
             Image(
                 painter = painterResource(R.drawable.button_pause),
                 contentDescription = "pause",
