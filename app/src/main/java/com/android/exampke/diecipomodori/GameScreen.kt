@@ -252,7 +252,11 @@ fun GameScreen(
                 Spacer(modifier = Modifier.height(20.dp))
                 val animatedProgress by animateFloatAsState(
                     targetValue = (totalSeconds - leftSeconds) / totalSeconds.toFloat(),
-                    animationSpec = tween(durationMillis = 1000, easing = LinearEasing),
+                    animationSpec = if (leftSeconds == totalSeconds) {
+                        tween(durationMillis = 0) // 초기 상태에서는 즉시 0으로 설정
+                    } else {
+                        tween(durationMillis = 1000, easing = LinearEasing)
+                    },
                     label = ""
                 )
                 VerticalProgressBar(
