@@ -59,12 +59,7 @@ fun LobbyScreen(navController: NavController, gameViewModel: GameViewModel) {
         val screenWidth = maxWidth
         val screenHeight = maxHeight
         val context = LocalContext.current
-        val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-        val vibrate: () -> Unit = {
-            val vibrationEffect =
-                VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE)
-            vibrator.vibrate(vibrationEffect)
-        }
+        val vibrate = rememberVibrate()
         // 배경 이미지 (전체 화면)
         Image(
             painter = painterResource(id = R.drawable.lobby_backgroundsvg),
@@ -309,5 +304,18 @@ private fun BestScore(context: Context, modifier: Modifier) {
                 fontSize = 60.sp
             )
         )
+    }
+}
+
+@Composable
+fun rememberVibrate(): () -> Unit {
+    val context = LocalContext.current
+    // context가 변경되지 않도록 remember로 묶어줍니다.
+    val vibrator = remember(context) {
+        context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+    }
+    return {
+        val vibrationEffect = VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE)
+        vibrator.vibrate(vibrationEffect)
     }
 }

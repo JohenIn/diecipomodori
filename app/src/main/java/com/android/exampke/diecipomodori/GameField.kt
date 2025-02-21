@@ -1,8 +1,6 @@
 package com.android.exampke.diecipomodori
 
 import android.content.Context
-import android.os.VibrationEffect
-import android.os.Vibrator
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -63,12 +61,7 @@ fun GameField(
     val cellBounds = remember(restartTrigger) { mutableStateMapOf<Pair<Int, Int>, Rect>() }
     var freeDragStartOffset by remember { mutableStateOf<Offset?>(null) }
     var freeDragCurrentOffset by remember { mutableStateOf<Offset?>(null) }
-    val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-    val vibrate: () -> Unit = {
-        val vibrationEffect =
-            VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE)
-        vibrator.vibrate(vibrationEffect)
-    }
+    val vibrate = rememberVibrate()
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxHeight()
