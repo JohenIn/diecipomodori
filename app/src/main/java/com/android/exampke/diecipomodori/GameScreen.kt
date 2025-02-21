@@ -181,45 +181,66 @@ fun GameScreen(modifier: Modifier = Modifier, navController: NavController) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(Color(0xFF919191).copy(alpha = 0.5f)),
+                        .background(Color(0xFFFFFFFF).copy(alpha = 0.5f)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Image(
-                        painter = painterResource(R.drawable.button_backhomeaftergame),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .clickable {
-                                navController.navigate("lobby")
-                                vibrate()
-                            }
-                            .align(Alignment.TopStart)
-                    )
-                    Image(
-                        painter = painterResource(R.drawable.button_reset),
-                        contentDescription = "reset",
-                        modifier = Modifier
-                            .clickable {
-                                // Reset: 게임 상태 초기화 (restartTrigger 증가 등)
-                                restartTrigger++
-                                score = 0
-                                timeLeft = 120
-                                // 기타 초기화 작업이 필요하다면 추가
-                                isPaused = false
-                                vibrate()
-                            }
-                            .align(Alignment.TopCenter)
-                    )
-                    Image(
-                        painter = painterResource(R.drawable.button_resume),
-                        contentDescription = "resume",
-                        modifier = Modifier
-                            .clickable {
-                                isPaused = false
-                                vibrate()
-                            }
-                            .align(Alignment.TopEnd)
-                    )
+                    BoxWithConstraints(modifier = Modifier.align(Alignment.TopStart)) {
+                        // 이미지의 하단 20% 영역에 클릭 가능 오버레이 추가
+                        Image(
+                            painter = painterResource(R.drawable.button_backhomeaftergame),
+                            contentDescription = "lobby",
+                        )
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .width(maxWidth * 0.2f)
+                                .height(maxHeight * 0.2f)
+                                .clickable {
+                                    navController.navigate("lobby")
+                                    vibrate()
+                                }
+                                .background(Color.Transparent)
+                        )
+                    }
+                    BoxWithConstraints(modifier = Modifier.align(Alignment.TopCenter)) {
+                        // 이미지의 하단 20% 영역에 클릭 가능 오버레이 추가
+                        Image(
+                            painter = painterResource(R.drawable.button_reset),
+                            contentDescription = "reset",
+                        )
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .width(maxWidth * 0.2f)
+                                .height(maxHeight * 0.2f)
+                                .clickable {
+                                    navController.navigate("reset")
+                                    vibrate()
+                                }
+                                .background(Color.Transparent)
+                        )
+                    }
+                    BoxWithConstraints(modifier = Modifier.align(Alignment.TopEnd)) {
+                        // 이미지의 하단 20% 영역에 클릭 가능 오버레이 추가
+                        Image(
+                            painter = painterResource(R.drawable.button_resume),
+                            contentDescription = "resume",
+                        )
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .width(maxWidth * 0.2f)
+                                .height(maxHeight * 0.2f)
+                                .clickable {
+                                    isPaused = false
+                                    vibrate()
+                                }
+                                .background(Color.Transparent)
+                        )
+                    }
                 }
+
+
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
