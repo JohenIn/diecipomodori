@@ -1,6 +1,7 @@
 package com.android.exampke.diecipomodori
 
-import android.content.Context
+import android.media.MediaPlayer
+import android.media.SoundPool
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
@@ -30,11 +32,13 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.boundsInParent
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.random.Random
@@ -46,6 +50,8 @@ fun GameField(
     score: Int,
     onScoreChange: (Int) -> Unit
 ) {
+    val context = LocalContext.current
+
     val numRows = 10
     val numCols = 17
     val board = remember(restartTrigger) {
@@ -61,6 +67,30 @@ fun GameField(
     var freeDragStartOffset by remember { mutableStateOf<Offset?>(null) }
     var freeDragCurrentOffset by remember { mutableStateOf<Offset?>(null) }
     val vibrate = rememberVibrate()
+
+    //효과음 재생 여부
+    var shouldPlaySound by remember { mutableStateOf(false) }
+    LaunchedEffect(shouldPlaySound) {
+        if (shouldPlaySound) {
+            val mediaPlayer = MediaPlayer.create(context, R.raw.pop)
+            mediaPlayer.start()
+            delay(mediaPlayer.duration.toLong()) // 소리가 끝날 때까지 대기
+            mediaPlayer.release() // 메모리 정리
+            shouldPlaySound = false
+        }
+    }
+
+    // SoundPool 초기화 및 사운드 로드 (컴포지션 시작 시 한 번만 실행)
+    val soundPool = remember {
+        SoundPool.Builder()
+            .setMaxStreams(5)
+            .build()
+    }
+    val popSoundId = remember {
+        soundPool.load(context, R.raw.pop, 1)
+    }
+
+
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxHeight()
@@ -127,6 +157,11 @@ fun GameField(
                                             }
                                         }
                                     }
+                                    //pop.ogg 효과음 재생 true
+                                    //shouldPlaySound = true //효과음 재생 트리거 활성화
+
+                                    // 효과음 재생: 볼륨 0.5f, 우선순위 1, 반복 없음, 재생 속도 1.0f
+                                    soundPool.play(popSoundId, 1f, 1f, 1, 0, 1.0f)
                                 }
                             }
                             dragStartCell = null
@@ -182,7 +217,7 @@ fun GameField(
                                     )
                                     Text(
                                         text = board[rowIndex][colIndex].toString(),
-                                        fontSize = 16.sp,
+                                        fontSize = 20.sp,
                                         fontWeight = FontWeight.ExtraBold
                                     )
                                 }

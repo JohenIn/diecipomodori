@@ -1,5 +1,6 @@
 package com.android.exampke.diecipomodori
 
+import android.media.MediaPlayer
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -22,6 +23,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -52,12 +54,17 @@ fun GameScreen(
     gameViewModel: GameViewModel
 ) {
     // 인트로 화면 및 게임 시작 상태
+    val context = LocalContext.current
     var gameStarted by remember { mutableStateOf(false) }
-    var isPlaying by remember { mutableStateOf(true) }
+    var isPlaying by remember { mutableStateOf(false) }
     // 일시정지 상태 변수
     var isPaused by remember { mutableStateOf(false) }
-    val context = LocalContext.current
     val vibrate = rememberVibrate()
+
+    // MediaPlayer 인스턴스를 상태로 관리
+    var bgmPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
+
+
     if (!gameStarted) {
         Box(
             modifier = modifier.fillMaxSize(),
@@ -87,6 +94,13 @@ fun GameScreen(
                             vibrate()
                             gameStarted = true
                             isPlaying = true
+                            isPaused = false
+                            // BGM 생성 및 재생 (처음부터 시작)
+                            bgmPlayer?.release() // 혹시 기존 인스턴스가 있다면 해제
+                            bgmPlayer = MediaPlayer.create(context, R.raw.gameplayingbgm).apply {
+                                isLooping = false
+                                setVolume(0.3f, 0.3f)
+                                start()}
                         }
                         .background(Color.Transparent)
                 )
@@ -103,7 +117,7 @@ fun GameScreen(
         )
         var restartTrigger by remember { mutableStateOf(0) }
         var score by remember(restartTrigger) { mutableStateOf(0) }
-        var totalSeconds by remember(restartTrigger) { mutableStateOf(10) }// 테스트 후 120초로 변경 시간 설정 변수
+        var totalSeconds by remember(restartTrigger) { mutableStateOf(5) }// 테스트 후 120초로 변경 시간 설정 변수
         var leftSeconds by remember(restartTrigger) { mutableStateOf(totalSeconds) }
 
         // 타이머: 일시정지 상태에서는 업데이트를 잠시 멈춤
@@ -125,6 +139,8 @@ fun GameScreen(
                 modifier = Modifier
                     .clickable {
                         isPaused = true
+                        // BGM 일시정지
+                        bgmPlayer?.takeIf { it.isPlaying }?.pause()
                         vibrate()
                     }
                     .weight(1f)
@@ -171,9 +187,20 @@ fun GameScreen(
                                         gameViewModel.increaseUsedCoin()
                                         restartTrigger++
                                         score = 0
-                                        leftSeconds = 120
                                         // 기타 초기화 작업이 필요하다면 추가
                                         isPaused = false
+                                        // Reset: 기존 BGM 중지 후 새로 시작
+                                        bgmPlayer?.let { player ->
+                                            if (player.isPlaying) {
+                                                player.stop()
+                                            }
+                                            player.release()
+                                        }
+                                        bgmPlayer = MediaPlayer.create(context, R.raw.gameplayingbgm).apply {
+                                            isLooping = false
+                                            setVolume(0.3f, 0.3f)
+                                            start()
+                                        }
                                         vibrate()
                                     } else {
                                         vibrate()
@@ -195,6 +222,8 @@ fun GameScreen(
                                 .height(maxHeight * 0.2f)
                                 .clickable {
                                     isPaused = false
+                                    // 일시정지된 위치에서 재개
+                                    bgmPlayer?.start()
                                     vibrate()
                                 }
                                 .background(Color.Transparent)
@@ -278,6 +307,13 @@ fun GameScreen(
                 withContext(Dispatchers.IO) {
                     db.userDao().insertIfHigher(User(score = score))
                 }
+                bgmPlayer?.let { player ->
+                    if (player.isPlaying) {
+                        player.stop()
+                    }
+                    player.release()
+                }
+                bgmPlayer = null
             }
         }
         // 게임 종료 오버레이 (if timeLeft <= 0)
@@ -322,6 +358,19 @@ fun GameScreen(
                                     gameViewModel.increaseUsedCoin()
                                     restartTrigger++
                                     score = 0
+                                    isPlaying = true
+                                    // 기존 BGM 중지 및 새로 시작
+                                    bgmPlayer?.let { player ->
+                                        if (player.isPlaying) {
+                                            player.stop()
+                                        }
+                                        player.release()
+                                    }
+                                    bgmPlayer = MediaPlayer.create(context, R.raw.gameplayingbgm).apply {
+                                        isLooping = false
+                                        setVolume(0.3f, 0.3f)
+                                        start()
+                                    }
                                     vibrate()
                                 } else {
                                     vibrate()
