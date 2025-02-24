@@ -1,6 +1,7 @@
 package com.android.exampke.diecipomodori
 
 import android.app.Activity
+import android.content.ContentValues.TAG
 import android.content.Context
 import android.os.VibrationEffect
 import android.os.Vibrator
@@ -45,8 +46,9 @@ import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.FullScreenContentCallback
 import com.google.android.gms.ads.LoadAdError
-import com.google.android.gms.ads.interstitial.InterstitialAd
-import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
+import com.google.android.gms.ads.OnUserEarnedRewardListener
+import com.google.android.gms.ads.rewarded.RewardedAd
+import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
 
 @Composable
 fun LobbyScreen(navController: NavController, gameViewModel: GameViewModel) {
@@ -130,54 +132,53 @@ fun LobbyScreen(navController: NavController, gameViewModel: GameViewModel) {
                 .align(Alignment.BottomCenter)
         ) { Text("Reset Coins") }
 
-        var interstitialAd by remember { mutableStateOf<InterstitialAd?>(null) }
+        //newAds
         if (viewAds) {
+        var rewardedAd: RewardedAd?
             val adRequest = AdRequest.Builder().build()
-            InterstitialAd.load(
+            RewardedAd.load(
                 context,
-                "ca-app-pub-3940256099942544/1033173712",
+                "ca-app-pub-3940256099942544/5224354917", // 테스트 광고 단위 ID
                 adRequest,
-                object : InterstitialAdLoadCallback() {
+                object : RewardedAdLoadCallback() {
                     override fun onAdFailedToLoad(adError: LoadAdError) {
-                        Log.d("GameScreen", adError.toString())
-                        interstitialAd = null
+                        Log.d(TAG, adError.toString())
+                        rewardedAd = null
+                        viewAds = false
                     }
-
-                    override fun onAdLoaded(loadedAd: InterstitialAd) {
-                        Log.d("GameScreen", "Ad was loaded.")
-                        interstitialAd = loadedAd
-                        interstitialAd?.fullScreenContentCallback =
-                            object : FullScreenContentCallback() {
-                                override fun onAdClicked() {
-                                    Log.d("GameScreen", "Ad was clicked.")
-                                }
-
-                                override fun onAdDismissedFullScreenContent() {
-                                    Log.d("GameScreen", "Ad dismissed fullscreen content.")
-                                    interstitialAd = null
-                                }
-
-                                override fun onAdFailedToShowFullScreenContent(adError: AdError) {
-                                    Log.e("GameScreen", "Ad failed to show fullscreen content.")
-                                    interstitialAd = null
-                                }
-
-                                override fun onAdImpression() {
-                                    Log.d("GameScreen", "Ad recorded an impression.")
-                                }
-
-                                override fun onAdShowedFullScreenContent() {
-                                    Log.d("GameScreen", "Ad showed fullscreen content.")
-                                }
+                    override fun onAdLoaded(ad: RewardedAd) {
+                        Log.d(TAG, "Rewarded Ad was loaded.")
+                        rewardedAd = ad
+                        rewardedAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
+                            override fun onAdClicked() {
+                                Log.d(TAG, "Rewarded ad clicked.")
                             }
+                            override fun onAdDismissedFullScreenContent() {
+                                Log.d(TAG, "Rewarded ad dismissed.")
+                                viewAds = false
+                                gameViewModel.resetCoins()
+                            }
+                            override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+                                Log.e(TAG, "Rewarded ad failed to show.")
+                                viewAds = false
+                            }
+                            override fun onAdImpression() {
+                                Log.d(TAG, "Rewarded ad impression recorded.")
+                            }
+                            override fun onAdShowedFullScreenContent() {
+                                Log.d(TAG, "Rewarded ad showed fullscreen content.")
+                            }
+                        }
                         (context as? Activity)?.let { activity ->
-                            interstitialAd?.show(activity)
+                            rewardedAd?.show(activity, OnUserEarnedRewardListener { rewardItem ->
+                                Log.d(TAG, "User earned reward: ${rewardItem.amount} ${rewardItem.type}")
+                                gameViewModel.resetCoins()
+                                viewAds = false
+                            })
                         }
                     }
                 }
             )
-            viewAds = false
-            gameViewModel.resetCoins()
         }
         // 상단 로고: 화면 너비의 70%
         Image(

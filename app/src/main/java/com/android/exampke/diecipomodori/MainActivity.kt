@@ -18,10 +18,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.android.exampke.diecipomodori.ui.theme.DieciPomodoriTheme
 import com.android.exampke.diecipomodori.viewmodel.GameViewModel
-import com.google.android.gms.ads.MobileAds
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     private val gameViewModel: GameViewModel by viewModels()
@@ -35,12 +31,6 @@ class MainActivity : ComponentActivity() {
             WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         controller.hide(WindowInsetsCompat.Type.systemBars())
         enableEdgeToEdge()
-
-        // 광고 SDK 초기화 (앱 실행 시 한 번)
-        val backgroundScope = CoroutineScope(Dispatchers.IO)
-        backgroundScope.launch {
-            MobileAds.initialize(this@MainActivity) {}
-        }
 
         // 기기의 센서를 사용하되, 가로 방향만 유지 (왼쪽/오른쪽 모두 가능)
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
