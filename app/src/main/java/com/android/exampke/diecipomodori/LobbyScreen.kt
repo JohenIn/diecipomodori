@@ -64,20 +64,12 @@ fun LobbyScreen(navController: NavController, gameViewModel: GameViewModel) {
         // 배경 이미지 (전체 화면)
         ScreenWallpaper(R.drawable.lobby_wallpaper)
         // Play 버튼 이미지 (중앙)
-        Image(
-            painter = painterResource(id = R.drawable.board_playbutton),
-            contentDescription = "tomato",
-            modifier = Modifier
-                .align(Alignment.Center)
-                .offset(y = (-screenHeight * (0.18f)))
-                .clickable {
-                    if (gameViewModel.coinsForPlaying > 0) {
-                        navController.navigate("game")
-                        vibrate()
-                    } else {
-                        vibrate()
-                    }
-                }
+        PlayButton(
+            screenHeight,
+            gameViewModel,
+            navController,
+            vibrate,
+            modifier = Modifier.align(Alignment.Center)
         )
 
         TomatoCoinCount(
@@ -127,7 +119,7 @@ fun LobbyScreen(navController: NavController, gameViewModel: GameViewModel) {
 
         //newAds
         if (viewAds) {
-        var rewardedAd: RewardedAd?
+            var rewardedAd: RewardedAd?
             val adRequest = AdRequest.Builder().build()
             RewardedAd.load(
                 context,
@@ -139,32 +131,41 @@ fun LobbyScreen(navController: NavController, gameViewModel: GameViewModel) {
                         rewardedAd = null
                         viewAds = false
                     }
+
                     override fun onAdLoaded(ad: RewardedAd) {
                         Log.d(TAG, "Rewarded Ad was loaded.")
                         rewardedAd = ad
-                        rewardedAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
-                            override fun onAdClicked() {
-                                Log.d(TAG, "Rewarded ad clicked.")
+                        rewardedAd?.fullScreenContentCallback =
+                            object : FullScreenContentCallback() {
+                                override fun onAdClicked() {
+                                    Log.d(TAG, "Rewarded ad clicked.")
+                                }
+
+                                override fun onAdDismissedFullScreenContent() {
+                                    Log.d(TAG, "Rewarded ad dismissed.")
+                                    viewAds = false
+                                    gameViewModel.resetCoins()
+                                }
+
+                                override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+                                    Log.e(TAG, "Rewarded ad failed to show.")
+                                    viewAds = false
+                                }
+
+                                override fun onAdImpression() {
+                                    Log.d(TAG, "Rewarded ad impression recorded.")
+                                }
+
+                                override fun onAdShowedFullScreenContent() {
+                                    Log.d(TAG, "Rewarded ad showed fullscreen content.")
+                                }
                             }
-                            override fun onAdDismissedFullScreenContent() {
-                                Log.d(TAG, "Rewarded ad dismissed.")
-                                viewAds = false
-                                gameViewModel.resetCoins()
-                            }
-                            override fun onAdFailedToShowFullScreenContent(adError: AdError) {
-                                Log.e(TAG, "Rewarded ad failed to show.")
-                                viewAds = false
-                            }
-                            override fun onAdImpression() {
-                                Log.d(TAG, "Rewarded ad impression recorded.")
-                            }
-                            override fun onAdShowedFullScreenContent() {
-                                Log.d(TAG, "Rewarded ad showed fullscreen content.")
-                            }
-                        }
                         (context as? Activity)?.let { activity ->
                             rewardedAd?.show(activity, OnUserEarnedRewardListener { rewardItem ->
-                                Log.d(TAG, "User earned reward: ${rewardItem.amount} ${rewardItem.type}")
+                                Log.d(
+                                    TAG,
+                                    "User earned reward: ${rewardItem.amount} ${rewardItem.type}"
+                                )
                                 gameViewModel.resetCoins()
                                 viewAds = false
                             })
@@ -189,6 +190,30 @@ fun LobbyScreen(navController: NavController, gameViewModel: GameViewModel) {
             context = context
         )
     }
+}
+
+@Composable
+private fun PlayButton(
+    screenHeight: Dp,
+    gameViewModel: GameViewModel,
+    navController: NavController,
+    vibrate: () -> Unit,
+    modifier: Modifier
+) {
+    Image(
+        painter = painterResource(id = R.drawable.board_playbutton),
+        contentDescription = "tomato",
+        modifier = modifier
+            .offset(y = (-screenHeight * (0.18f)))
+            .clickable {
+                if (gameViewModel.coinsForPlaying > 0) {
+                    navController.navigate("game")
+                    vibrate()
+                } else {
+                    vibrate()
+                }
+            }
+    )
 }
 
 @Composable
