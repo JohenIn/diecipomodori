@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,6 +38,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import com.android.exampke.diecipomodori.model.MyDb
 import com.android.exampke.diecipomodori.model.User
@@ -61,6 +65,23 @@ fun GameScreen(
 
     // MediaPlayer 인스턴스를 상태로 관리
     var bgmPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
+
+// LifecycleEventObserver를 사용하여 onPause 이벤트 감지
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_PAUSE) {
+                // 앱이 백그라운드로 전환되거나 화면이 꺼지면 자동으로 pause 처리
+                isPaused = true
+                // 필요하다면 추가적인 pause 처리 로직을 넣을 수 있습니다.
+                bgmPlayer?.takeIf { it.isPlaying }?.pause()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
 
 
     if (!gameStarted) {
