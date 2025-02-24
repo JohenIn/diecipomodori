@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -87,12 +88,10 @@ fun LobbyScreen(navController: NavController, gameViewModel: GameViewModel) {
             // 이미지의 하단 20% 영역에 클릭 가능 오버레이 추가
             Image(
                 painter = painterResource(R.drawable.board_refilltomatoads),
-                contentDescription = "resume",
+                contentDescription = "refill tomato Coin",
                 colorFilter = if (gameViewModel.usedCoin == 0) {
                     ColorFilter.colorMatrix(ColorMatrix().apply {
-                        setToSaturation(
-                            0.1f
-                        )
+                        setToSaturation(0.1f)
                     })
                 } else null,
                 alpha = if (gameViewModel.usedCoin == 0) 0.7f else 1f,
@@ -108,72 +107,87 @@ fun LobbyScreen(navController: NavController, gameViewModel: GameViewModel) {
                     }
                     .background(Color.Transparent)
             )
-        }
-        Button(
-            onClick = {
-                gameViewModel.resetCoins()
-            },
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-        ) { Text("Reset Coins") }
-
-        //newAds
-        if (viewAds) {
-            var rewardedAd: RewardedAd?
-            val adRequest = AdRequest.Builder().build()
-            RewardedAd.load(
-                context,
-                "ca-app-pub-3940256099942544/5224354917", // 테스트 광고 단위 ID
-                adRequest,
-                object : RewardedAdLoadCallback() {
-                    override fun onAdFailedToLoad(adError: LoadAdError) {
-                        Log.d(TAG, adError.toString())
-                        rewardedAd = null
-                        viewAds = false
-                    }
-
-                    override fun onAdLoaded(ad: RewardedAd) {
-                        Log.d(TAG, "Rewarded Ad was loaded.")
-                        rewardedAd = ad
-                        rewardedAd?.fullScreenContentCallback =
-                            object : FullScreenContentCallback() {
-                                override fun onAdClicked() {
-                                    Log.d(TAG, "Rewarded ad clicked.")
-                                }
-
-                                override fun onAdDismissedFullScreenContent() {
-                                    Log.d(TAG, "Rewarded ad dismissed.")
-                                    viewAds = false
-                                    gameViewModel.resetCoins()
-                                }
-
-                                override fun onAdFailedToShowFullScreenContent(adError: AdError) {
-                                    Log.e(TAG, "Rewarded ad failed to show.")
-                                    viewAds = false
-                                }
-
-                                override fun onAdImpression() {
-                                    Log.d(TAG, "Rewarded ad impression recorded.")
-                                }
-
-                                override fun onAdShowedFullScreenContent() {
-                                    Log.d(TAG, "Rewarded ad showed fullscreen content.")
-                                }
-                            }
-                        (context as? Activity)?.let { activity ->
-                            rewardedAd?.show(activity, OnUserEarnedRewardListener { rewardItem ->
-                                Log.d(
-                                    TAG,
-                                    "User earned reward: ${rewardItem.amount} ${rewardItem.type}"
-                                )
-                                gameViewModel.resetCoins()
-                                viewAds = false
-                            })
-                        }
-                    }
-                }
+            //광고
+            PreloadedRewardedAd(
+                viewAds = viewAds,
+                onViewAdsConsumed = { viewAds = false },
+                gameViewModel = gameViewModel
             )
         }
+        Row(modifier = Modifier.align(Alignment.BottomCenter)) {
+            Button(
+                onClick = {
+                    gameViewModel.resetCoins()
+                },
+            ) { Text("Reset Coins") }
+            Button(
+                onClick = {
+                    gameViewModel.increaseUsedCoin()
+                },
+            ) { Text("Minus Coins") }
+        }
+
+        //newAds
+//        LaunchedEffect(viewAds){
+//            if (viewAds) {
+//                var rewardedAd: RewardedAd?
+//                val adRequest = AdRequest.Builder().build()
+//                RewardedAd.load(
+//                    context,
+//                    "ca-app-pub-3940256099942544/5224354917", // 테스트 광고 단위 ID
+//                    adRequest,
+//                    object : RewardedAdLoadCallback() {
+//                        override fun onAdFailedToLoad(adError: LoadAdError) {
+//                            Log.d(TAG, adError.toString())
+//                            rewardedAd = null
+//                            viewAds = false
+//                        }
+//
+//                        override fun onAdLoaded(ad: RewardedAd) {
+//                            Log.d(TAG, "Rewarded Ad was loaded.")
+//                            rewardedAd = ad
+//                            rewardedAd?.fullScreenContentCallback =
+//                                object : FullScreenContentCallback() {
+//                                    override fun onAdClicked() {
+//                                        Log.d(TAG, "Rewarded ad clicked.")
+//                                    }
+//
+//                                    override fun onAdDismissedFullScreenContent() {
+//                                        Log.d(TAG, "Rewarded ad dismissed.")
+//                                        viewAds = false
+//                                        gameViewModel.resetCoins()
+//                                    }
+//
+//                                    override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+//                                        Log.e(TAG, "Rewarded ad failed to show.")
+//                                        viewAds = false
+//                                    }
+//
+//                                    override fun onAdImpression() {
+//                                        Log.d(TAG, "Rewarded ad impression recorded.")
+//                                    }
+//
+//                                    override fun onAdShowedFullScreenContent() {
+//                                        Log.d(TAG, "Rewarded ad showed fullscreen content.")
+//                                    }
+//                                }
+//                            (context as? Activity)?.let { activity ->
+//                                rewardedAd?.show(
+//                                    activity,
+//                                    OnUserEarnedRewardListener { rewardItem ->
+//                                        Log.d(
+//                                            TAG,
+//                                            "User earned reward: ${rewardItem.amount} ${rewardItem.type}"
+//                                        )
+//                                        gameViewModel.resetCoins()
+//                                        viewAds = false
+//                                    })
+//                            }
+//                        }
+//                    }
+//                )
+//            }
+//        }
         // 상단 로고: 화면 너비의 70%
         Image(
             painter = painterResource(id = R.drawable.mainlobbylogo),
