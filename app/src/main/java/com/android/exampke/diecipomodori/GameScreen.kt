@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,7 +37,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import com.android.exampke.diecipomodori.model.MyDb
 import com.android.exampke.diecipomodori.model.User
@@ -70,14 +68,7 @@ fun GameScreen(
             modifier = modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            Image(
-                painter = painterResource(R.drawable.playbackground),
-                contentDescription = null,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .zIndex(-1f)
-                    .alpha(0.5f)
-            )
+            ScreenWallpaper(R.drawable.game_wallpaper,modifier = Modifier.alpha(0.5f))
             BoxWithConstraints(modifier = Modifier.align(Alignment.TopCenter)) {
                 // 이미지의 하단 20% 영역에 클릭 가능 오버레이 추가
                 Image(
@@ -108,16 +99,10 @@ fun GameScreen(
         }
     } else {
         // 게임 진행 상태
-        Image(
-            painter = painterResource(R.drawable.playbackground),
-            contentDescription = null,
-            modifier = Modifier
-                .fillMaxSize()
-                .zIndex(-1f)
-        )
+        ScreenWallpaper(R.drawable.game_wallpaper)
         var restartTrigger by remember { mutableStateOf(0) }
         var score by remember(restartTrigger) { mutableStateOf(0) }
-        var totalSeconds by remember(restartTrigger) { mutableStateOf(5) }// 테스트 후 120초로 변경 시간 설정 변수
+        var totalSeconds by remember(restartTrigger) { mutableStateOf(120) }// 테스트 후 120초로 변경 시간 설정 변수
         var leftSeconds by remember(restartTrigger) { mutableStateOf(totalSeconds) }
 
         // 타이머: 일시정지 상태에서는 업데이트를 잠시 멈춤

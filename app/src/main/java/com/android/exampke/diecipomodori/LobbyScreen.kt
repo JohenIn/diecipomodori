@@ -30,7 +30,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -63,13 +62,7 @@ fun LobbyScreen(navController: NavController, gameViewModel: GameViewModel) {
         val context = LocalContext.current
         val vibrate = rememberVibrate()
         // 배경 이미지 (전체 화면)
-        Image(
-            painter = painterResource(id = R.drawable.lobby_backgroundsvg),
-            contentDescription = "tomato",
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop
-        )
-
+        ScreenWallpaper(R.drawable.lobby_wallpaper)
         // Play 버튼 이미지 (중앙)
         Image(
             painter = painterResource(id = R.drawable.board_playbutton),
@@ -196,6 +189,15 @@ fun LobbyScreen(navController: NavController, gameViewModel: GameViewModel) {
             context = context
         )
     }
+}
+
+@Composable
+fun ScreenWallpaper(image: Int, modifier: Modifier = Modifier) {
+    Image(
+        painter = painterResource(id = image),
+        contentDescription = "tomato",
+        modifier = modifier.fillMaxSize(),
+    )
 }
 
 @Composable
