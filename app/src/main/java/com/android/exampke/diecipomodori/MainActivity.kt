@@ -47,7 +47,7 @@ class MainActivity : ComponentActivity() {
                     ) {
                         composable("splash") { SplashScreen(navController = navController) }
                         composable("lobby") { LobbyScreen(navController = navController, gameViewModel = gameViewModel) }
-                        composable("game") { GameScreen(modifier = Modifier.fillMaxSize(), navController = navController, gameViewModel = gameViewModel) }
+                        composable("game") { GameScreen( navController = navController, gameViewModel = gameViewModel) }
                     }
                 }
             }

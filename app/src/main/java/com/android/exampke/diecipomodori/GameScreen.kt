@@ -51,7 +51,6 @@ import kotlinx.coroutines.withContext
 
 @Composable
 fun GameScreen(
-    modifier: Modifier = Modifier,
     navController: NavController,
     gameViewModel: GameViewModel
 ) {
@@ -86,7 +85,7 @@ fun GameScreen(
 
     if (!gameStarted) {
         Box(
-            modifier = modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
             ScreenWallpaper(R.drawable.game_wallpaper,modifier = Modifier.alpha(0.5f))
@@ -111,7 +110,7 @@ fun GameScreen(
                             bgmPlayer?.release() // 혹시 기존 인스턴스가 있다면 해제
                             bgmPlayer = MediaPlayer.create(context, R.raw.gameplayingbgm).apply {
                                 isLooping = false
-                                setVolume(0.3f, 0.3f)
+                                setVolume(0.1f, 0.1f)
                                 start()}
                         }
                         .background(Color.Transparent)
