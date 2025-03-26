@@ -110,7 +110,7 @@ fun GameScreen(
                             bgmPlayer?.release() // 혹시 기존 인스턴스가 있다면 해제
                             bgmPlayer = MediaPlayer.create(context, R.raw.gameplayingbgm).apply {
                                 isLooping = false
-                                setVolume(0.1f, 0.1f)
+                                setVolume(0.05f, 0.05f)
                                 start()}
                         }
                         .background(Color.Transparent)
