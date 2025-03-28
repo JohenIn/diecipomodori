@@ -14,7 +14,7 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.android.exampke.diecipomodori"
+        applicationId = "alanamang.diecipomodori"
         minSdk = 28
         targetSdk = 34
         versionCode = 1
