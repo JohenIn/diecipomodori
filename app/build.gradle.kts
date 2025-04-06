@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -9,6 +11,13 @@ plugins {
     id("com.google.devtools.ksp")
 }
 
+val localProperties = Properties().apply {
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        localPropertiesFile.inputStream().use { load(it) }
+    }
+}
+
 android {
     namespace = "com.android.exampke.diecipomodori"
     compileSdk = 35
@@ -18,9 +27,18 @@ android {
         minSdk = 28
         targetSdk = 34
         versionCode = 1
-        versionName = "1.0"
+        versionName = "1.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        //보상형 광고 Unit Id
+        val AdUnitID = localProperties.getProperty("AD_UNIT_ID", "")
+        buildConfigField("String", "AD_UNIT_ID", "\"$AdUnitID\"")
+
+        //구글 애드 광고 ID
+        val googleAdmobAppId = localProperties.getProperty("GOOGLE_ADMOB_APP_ID", "")
+        buildConfigField("String", "GOOGLE_ADMOB_APP_ID", "\"$googleAdmobAppId\"")
+        manifestPlaceholders["GOOGLE_ADMOB_APP_ID"] = googleAdmobAppId
     }
 
     buildTypes {
@@ -41,6 +59,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 

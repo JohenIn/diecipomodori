@@ -17,6 +17,7 @@ import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.OnUserEarnedRewardListener
 import com.google.android.gms.ads.rewarded.RewardedAd
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
+import com.android.exampke.diecipomodori.BuildConfig
 import kotlinx.coroutines.delay
 
 @Composable
@@ -33,13 +34,14 @@ fun PreloadedRewardedAd(
         val adRequest = AdRequest.Builder().build()
         RewardedAd.load(
             context,
-            "ca-app-pub-3940256099942544/5224354917",
+            BuildConfig.AD_UNIT_ID,
             adRequest,
             object : RewardedAdLoadCallback() {
                 override fun onAdFailedToLoad(adError: LoadAdError) {
                     Log.d(TAG, "Rewarded ad failed to load: ${adError.message}")
                     rewardedAd = null
                 }
+
                 override fun onAdLoaded(ad: RewardedAd) {
                     Log.d(TAG, "Rewarded Ad was loaded.")
                     rewardedAd = ad
@@ -72,20 +74,24 @@ fun PreloadedRewardedAd(
                     override fun onAdClicked() {
                         Log.d(TAG, "Rewarded ad clicked.")
                     }
+
                     override fun onAdDismissedFullScreenContent() {
                         Log.d(TAG, "Rewarded ad dismissed.")
                         gameViewModel.resetCoins()
                         onViewAdsConsumed()
                         loadRewardedAd()
                     }
+
                     override fun onAdFailedToShowFullScreenContent(adError: AdError) {
                         Log.e(TAG, "Rewarded ad failed to show: ${adError.message}")
                         onViewAdsConsumed()
                         loadRewardedAd()
                     }
+
                     override fun onAdImpression() {
                         Log.d(TAG, "Rewarded ad impression recorded.")
                     }
+
                     override fun onAdShowedFullScreenContent() {
                         Log.d(TAG, "Rewarded ad showed fullscreen content.")
                     }
